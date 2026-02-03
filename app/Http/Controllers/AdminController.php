@@ -302,7 +302,7 @@ class AdminController extends Controller
             'description' => 'nullable',
             'check_in_time' => 'string|required',
             'check_out_time' => 'string|required',
-            'preview_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            'preview_image' => 'required|file',
             'is_active' => 'integer|required',
             'email' => 'required|string|email|max:255|unique:hotels',
             'address' => 'nullable|string|max:255',
@@ -347,7 +347,7 @@ class AdminController extends Controller
             'description' => 'nullable',
             'check_in_time' => 'string|nullable',
             'check_out_time' => 'string|nullable',
-            'preview_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'preview_image' => 'nullable|file',
             'is_active' => 'integer|nullable|in:0,1',
             'email' => 'nullable|string|email|max:255|unique:hotels,email,' . $hotel->id,
             'address' => 'nullable|string|max:255',
@@ -382,6 +382,9 @@ class AdminController extends Controller
     }
     public function hotel_delete($id)
     {
+
+        HotelAmenityArray::where('hotel_id', $id)->delete();
+
         Hotel::destroy($id);
         return redirect()->route('hotel.index');
     }
@@ -516,7 +519,7 @@ class AdminController extends Controller
     public function room_store(Request $request, $hotel, $room_type)
     {
         $data = $request->validate([
-            'room_number' => 'required|string|max:255|unique:rooms,room_number',
+            'room_number' => 'required|string|max:255',
             'floor' => 'required|string|max:255',
             'view_type' => 'required|string|max:255',
             'is_smoking_available' => 'required|integer|in:0,1',
@@ -539,7 +542,7 @@ class AdminController extends Controller
     public function room_update(Request $request, $hotel, $room_type, Room $room)
         {
             $data = $request->validate([
-                'room_number' => 'required|string|max:255|unique:rooms,room_number,' . $room->id,
+                'room_number' => 'required|string|max:255',
                 'floor' => 'required|string|max:255',
                 'view_type' => 'required|string|max:255',
                 'is_smoking_available' => 'required|integer|in:0,1',

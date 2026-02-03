@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 
 class Hotel extends Model
 {
     protected $table = 'hotels';
     protected $guarded = false;
+    use Filterable;
 
 
     public function country()
@@ -35,6 +37,11 @@ class Hotel extends Model
 
     public function room_type()
     {
-        return $this->belongsTo(RoomType::class, 'room_type_id');
+        return $this->hasMany(RoomType::class, 'hotel_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'hotel_id');
     }
 }

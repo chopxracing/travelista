@@ -1,51 +1,29 @@
 @extends('admin.layout')
 
 @section('content')
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0">Добавить фотографии</h1>
-                </div><!-- /.col -->
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item active">Главная</li>
-                    </ol>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
-    </div>
-    <!-- /.content-header -->
+    <div class="card">
+        <div class="card-body">
+            <form id="hotel-dropzone" action="{{ route('hotel_photo.store', $hotel) }}" class="dropzone" enctype="multipart/form-data">
+                @csrf
+            </form>
 
-    <!-- Main content -->
-    <section class="content">
-        <div class="card">
-            <div class="card-body">
+            <button id="uploadBtn" class="btn btn-primary mt-3">Загрузить</button>
 
-                <form id="hotel-dropzone"
-                      action="{{ route('hotel_photo.store', $hotel) }}"
-                      class="dropzone">
-                    @csrf
-                </form>
-
-                <button id="uploadBtn" class="btn btn-primary mt-3">
-                    Загрузить
-                </button>
-
-            </div>
+            <div id="uploadedPreview" class="mt-3 d-flex flex-wrap gap-2"></div>
         </div>
-    </section>
+    </div>
 @endsection
+
 @section('scripts')
     <script>
         Dropzone.autoDiscover = false;
 
         const dz = new Dropzone('#hotel-dropzone', {
-            paramName: 'images', // Laravel ожидает images[]
-            uploadMultiple: true,
+            url: '{{ route('hotel_photo.store', $hotel) }}',
+            paramName: 'images',      // ← обязательно с [] для массива
+            uploadMultiple: true,        // несколько файлов
             parallelUploads: 10,
-            maxFilesize: 4, // MB
+            maxFilesize: 4,              // MB
             acceptedFiles: 'image/*',
             autoProcessQueue: false,
             headers: {
@@ -54,8 +32,21 @@
             dictDefaultMessage: 'Перетащите фото или кликните сюда'
         });
 
+        // кнопка загрузки
         document.getElementById('uploadBtn').addEventListener('click', function () {
             dz.processQueue();
         });
+
+        // обработка ошибок
+        dz.on('error', function(file, response) {
+            console.log('Ошибка файла:', file);
+            console.log('Ответ сервера:', response);
+        });
+
+        // можно добавить успешную загрузку
+        dz.on('successmultiple', function(files, response) {
+            console.log('Файлы загружены:', response);
+        });
+
     </script>
 @endsection

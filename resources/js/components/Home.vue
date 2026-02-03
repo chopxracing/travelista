@@ -1,6 +1,9 @@
 <script>
 export default {
-    name: "Home"
+    name: "Home",
+    mounted() {
+        $('.fullscreen').css('height', $(window).height());
+    }
 }
 </script>
 

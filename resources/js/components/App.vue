@@ -1,28 +1,89 @@
 <script>
-import { computed } from "vue";
-import { useRoute } from "vue-router";
-
+import axios from "axios";
+import { reactive, provide } from 'vue';
 export default {
     name: "App",
-    setup() {
-        const route = useRoute();
-
-        // showLayout = true по умолчанию, false если route.meta.layout === false
-        const showLayout = computed(() => route.meta.layout !== false);
-
-        return { showLayout };
+    data() {
+        return {
+            isPageLoading: false,
+            userState: reactive({ user: null })
+        };
     },
+    provide() {
+        return {
+            currentUser: this.userState
+        };
+    },
+    computed: {
+        showLayout() {
+            return this.$route.meta.layout !== false;
+        },
+        user() {
+            return this.userState.user; // теперь доступно как `user` в шаблоне
+        }
+    },
+    created() {
+        // Глобальный спиннер при переходах
+        this.$router.beforeEach((to, from, next) => {
+            this.isPageLoading = true;
+            next();
+        });
+
+        this.$router.afterEach(() => {
+            setTimeout(() => {
+                this.isPageLoading = false;
+            }, 300); // плавность
+        });
+    },
+    methods: {
+        async fetchUser() {
+            try {
+                const res = await axios.get('http://localhost:8876/api/user');
+                this.userState.user = res.data; // реактивно обновляется
+            } catch {
+                this.userState.user = null;
+            }
+        },
+        async logout() {
+            try {
+                await axios.post('http://localhost:8876/api/logout');
+            } catch (err) {
+                console.error(err);
+            }
+            this.user = null;
+            localStorage.removeItem('api_token');
+            delete axios.defaults.headers.common['Authorization'];
+            this.$router.push('/login');
+        }
+    },
+    mounted() {
+        // Берем токен и сразу ставим его в axios
+        const token = localStorage.getItem('api_token');
+        if (token) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
+
+        // Теперь можем безопасно получить пользователя
+        this.fetchUser();
+    }
 };
 </script>
 
 <template>
+    <transition name="fade">
+        <div v-if="isPageLoading" class="page-loader">
+            <div class="spinner"></div>
+        </div>
+    </transition>
     <header v-if="showLayout" id="header">
         <div class="header-top">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-lg-6 col-sm-6 col-6 header-top-left">
                         <ul>
-                            <li> <router-link :to="{name: 'login'}">Войти в личный кабинет</router-link>
+                            <li v-if="user"> <router-link :to="{name: 'profile'}"> {{ user.surname }} {{ user.name }} </router-link>
+                            </li>
+                            <li v-else> <router-link :to="{name: 'login'}">Войти в личный кабинет</router-link>
                             </li>
                         </ul>
                     </div>
@@ -40,14 +101,14 @@ export default {
         <div class="container main-menu">
             <div class="row align-items-center justify-content-between d-flex">
                 <div id="logo">
-                    <a href="index.html"><img :src="'/img/logo.png'" alt="" title="" /></a>
+                    <router-link to="/"><img :src="'/img/logo.png'" alt="" title="" /></router-link>
                 </div>
                 <nav id="nav-menu-container">
                     <ul class="nav-menu">
                         <li> <router-link to="/">Главная</router-link></li>
                         <li> <router-link to="/about">О нас</router-link> </li>
-                        <li><a href="packages.html">Packages</a></li>
-                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="packages.html">Туры</a></li>
+                        <li><router-link to="/hotels">Отели</router-link></li>
                         <li><a href="insurance.html">Insurence</a></li>
                         <li class="menu-has-children"><a href="">Blog</a>
                             <ul>
@@ -73,7 +134,11 @@ export default {
         </div>
     </header>
 
-    <router-view></router-view>
+    <router-view v-slot="{ Component }">
+        <transition name="fade">
+            <component :is="Component" />
+        </transition>
+    </router-view>
 
     <footer v-if="showLayout" class="footer-area section-gap">
         <div class="container">
@@ -159,6 +224,39 @@ export default {
     </footer>
 </template>
 
-<style scoped>
+<style>
+.page-loader {
+    position: fixed;
+    inset: 0;
+    background: #000000aa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
 
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #ffffff33;
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
 </style>

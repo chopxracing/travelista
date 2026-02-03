@@ -4,6 +4,7 @@ services:
     volumes:
       - ./:/var/www
       - ./_docker/nginx/conf.d:/etc/nginx/conf.d
+      - /php/conf.d/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
     ports:
       - 8876:80
     depends_on:
