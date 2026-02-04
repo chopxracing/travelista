@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AdminLTE 3 | Dashboard</title>
+    <title>TravelSoft</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
@@ -271,6 +271,14 @@
                             <i class="nav-icon fas fa-hotel"></i>
                             <p>
                                 Отели
+                            </p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('tour.index') }}" class="nav-link">
+                            <i class="nav-icon fas fa-hotel"></i>
+                            <p>
+                                Туры
                             </p>
                         </a>
                     </li>

@@ -12,6 +12,8 @@ Route::get('/hotels/filters', [DataController::class, 'filterHotels'])->withoutM
 Route::get('/hotels/{hotel}', [DataController::class, 'getHotel']);
 Route::get('/reviews/{hotel}', [DataController::class, 'getReviews']);
 
+Route::post('/tours', [DataController::class, 'getTours'])->withoutMiddleware('throttle:api');
+Route::get('/tours/{tour}', [DataController::class, 'getTour']);
 
 // auth
 Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware('throttle:api');

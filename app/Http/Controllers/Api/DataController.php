@@ -4,14 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Filters\HotelFilter;
+use App\Http\Filters\TourFilter;
 use App\Http\Resources\CityResource;
 use App\Http\Resources\CountryResource;
 use App\Http\Resources\HotelResource;
 use App\Http\Resources\ReviewResource;
+use App\Http\Resources\TourResource;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Hotel;
 use App\Models\Review;
+use App\Models\Tour;
 use Illuminate\Http\Request;
 
 class DataController extends Controller
@@ -106,5 +109,42 @@ class DataController extends Controller
         ->where('hotel_id', $hotel->id)
             ->paginate(6);
         return ReviewResource::collection($reviews);
+    }
+
+    public function getTours(Request $request)
+    {
+        $data = $request->validate([
+            'city'       => 'nullable|integer|exists:cities,id',
+            'country'    => 'nullable|integer|exists:countries,id',
+            'stars'      => 'nullable|array',
+            'stars.*'    => 'integer|min:1|max:5',
+            'pricefrom'  => 'nullable|numeric|min:0',
+            'priceto'    => 'nullable|numeric|min:0',
+            'dates'      => 'nullable|array',
+            'dates.from' => 'nullable|date',
+            'dates.to'   => 'nullable|date',
+        ]);
+
+        $filter = app()->make(TourFilter::class, [
+            'queryParams' => array_filter($data)
+        ]);
+
+        $tours = Tour::with([
+            'hotel',
+            'hotel.photos',
+            'tour_type',
+            'tour_operator',
+            'city',
+            'country'
+        ])
+            ->filter($filter)
+            ->paginate(6);
+
+        return TourResource::collection($tours);
+    }
+
+    public function getTour(Tour $tour)
+    {
+        return new TourResource($tour);
     }
 }

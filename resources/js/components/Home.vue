@@ -16,27 +16,20 @@ export default {
                 <div class="container">
                     <div class="row fullscreen align-items-center justify-content-between">
                         <div class="col-lg-6 col-md-6 banner-left">
-                            <h6 class="text-white">Away from monotonous life</h6>
-                            <h1 class="text-white">Magical Travel</h1>
-                            <p class="text-white">
-                                If you are looking at blank cassettes on the web, you may be very confused at the
-                                difference in price. You may see some for as low as $.17 each.
-                            </p>
-                            <a href="#" class="primary-btn text-uppercase">Get Started</a>
+                            <h6 class="text-white">В дали от монотонной жизни</h6>
+                            <h1 class="text-white">Магическое путешествие</h1>
+                            <p class="text-white">Забронируйте путешествие мечты вместе с Travelista</p>
+                            <router-link :to="{ name: 'login' }" class="primary-btn text-uppercase">Начать</router-link>
                         </div>
                         <div class="col-lg-4 col-md-6 banner-right">
                             <ul class="nav nav-tabs" id="myTab" role="tablist">
                                 <li class="nav-item">
-                                    <a class="nav-link active" id="flight-tab" data-toggle="tab" href="#flight"
-                                       role="tab" aria-controls="flight" aria-selected="true">Flights</a>
-                                </li>
-                                <li class="nav-item">
                                     <a class="nav-link" id="hotel-tab" data-toggle="tab" href="#hotel" role="tab"
-                                       aria-controls="hotel" aria-selected="false">Hotels</a>
+                                       aria-controls="hotel" aria-selected="false">ОТЕЛИ</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" id="holiday-tab" data-toggle="tab" href="#holiday" role="tab"
-                                       aria-controls="holiday" aria-selected="false">Holidays</a>
+                                       aria-controls="holiday" aria-selected="false">ТУРЫ</a>
                                 </li>
                             </ul>
                             <div class="tab-content" id="myTabContent">

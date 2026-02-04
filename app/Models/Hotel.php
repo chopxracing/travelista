@@ -44,4 +44,8 @@ class Hotel extends Model
     {
         return $this->hasMany(Review::class, 'hotel_id');
     }
+    public function tours()
+    {
+        return $this->hasMany(Tour::class);
+    }
 }

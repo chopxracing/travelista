@@ -20,6 +20,17 @@ class TourResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'description' => $this->description,
+            'tour_operator' => new TourOperatorResource($this->tour_operator),
+            'tour_type' => new TourTypeResource($this->tour_type),
+            'country' => new CountryResource($this->country),
+            'city' => new CityResource($this->city),
+            'price' => $this->price,
+            'days' => $this->days,
+            'hotel' => new HotelResource($this->hotel),
+            'photos' => HotelImageResource::collection($this->hotel->photos),
+            'date_from' => $this->date_from,
+            'date_to' => $this->date_to,
         ];
     }
 }

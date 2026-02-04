@@ -71,6 +71,18 @@ Route::group(['prefix' => 'admin'], function () {
         Route::get('/{hotel}', [AdminController::class, 'hotel_show'])->name('hotel.show');
         Route::delete('/{hotel}', [AdminController::class, 'hotel_delete'])->name('hotel.delete');
     });
+
+    // Роуты админ - туры
+    Route::group(['prefix' => 'tour'], function () {
+        Route::get('/', [AdminController::class, 'tour_index'])->name('tour.index');
+        Route::get('/create', [AdminController::class, 'tour_create'])->name('tour.create');
+        Route::post('/', [AdminController::class, 'tour_store'])->name('tour.store');
+        Route::get('/{tour}/edit', [AdminController::class, 'tour_edit'])->name('tour.edit');
+        Route::patch('/{tour}', [AdminController::class, 'tour_update'])->name('tour.update');
+        Route::get('/{tour}', [AdminController::class, 'tour_show'])->name('tour.show');
+        Route::delete('/{tour}', [AdminController::class, 'tour_delete'])->name('tour.delete');
+    });
+
     // Роуты админ - типы номеров отеля (room_types)
     Route::group(['prefix' => 'room_type'], function () {
         Route::get('/{hotel}', [AdminController::class, 'room_type_index'])->name('room_type.index');

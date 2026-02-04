@@ -6,6 +6,8 @@ import Register from "./components/Authentification/Register.vue";
 import Hotels from "./components/Hotels.vue";
 import HotelShow from "./components/HotelShow.vue";
 import Profile from "./components/Authentification/Profile.vue";
+import Tours from "./components/Tours.vue";
+import TourShow from "./components/TourShow.vue";
 
 const routes = [
     {
@@ -45,6 +47,16 @@ const routes = [
         path: '/hotels/:id',
         name: 'hotels.show',
         component: HotelShow,
+    },
+    {
+        path: '/tours',
+        name: 'tours',
+        component: Tours,
+    },
+    {
+        path: '/tours/:id',
+        name: 'tours.show',
+        component: TourShow,
     }
 ];
 
