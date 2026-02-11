@@ -2,21 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\City;
-use App\Models\Country;
-use App\Models\CountryCity;
 use App\Models\Hotel;
-use App\Models\HotelAmenity;
-use App\Models\HotelAmenityArray;
 use App\Models\Photo;
-use App\Models\Room;
-use App\Models\RoomAmenity;
-use App\Models\RoomAmenityArray;
-use App\Models\RoomStatus;
 use App\Models\RoomType;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class ImageController extends Controller
@@ -39,19 +28,29 @@ class ImageController extends Controller
     {
         $request->validate([
             'images' => 'required|array',
-            'images.*' => 'image|max:4096',
+            'images.*' => 'image|max:10240', // лимит 10MB на файл
         ]);
+
+        $uploaded = [];
 
         foreach ($request->file('images') as $image) {
             $path = $image->store('hotels/photos', 'public');
 
-            Photo::create([
+            $photo = Photo::create([
                 'hotel_id' => $hotel->id,
                 'file_path' => $path,
             ]);
+
+            $uploaded[] = [
+                'id' => $photo->id,
+                'url' => Storage::url($photo->file_path),
+            ];
         }
 
-        return redirect()->route('photo.index', $hotel);
+        return response()->json([
+            'success' => true,
+            'uploaded' => $uploaded
+        ]);
     }
 
     public function hotel_photo_delete(Hotel $hotel, Photo $photo)
@@ -82,19 +81,29 @@ class ImageController extends Controller
     {
         $request->validate([
             'images' => 'required|array',
-            'images.*' => 'image|max:4096',
+            'images.*' => 'image|max:10240', // лимит 10MB на файл
         ]);
+
+        $uploaded = [];
 
         foreach ($request->file('images') as $image) {
             $path = $image->store('room_types/photos', 'public');
 
-            Photo::create([
+            $photo = Photo::create([
                 'room_type_id' => $room_type->id,
                 'file_path' => $path,
             ]);
+
+            $uploaded[] = [
+                'id' => $photo->id,
+                'url' => Storage::url($photo->file_path),
+            ];
         }
 
-        return redirect()->route('photo.index', $room_type);
+        return response()->json([
+            'success' => true,
+            'uploaded' => $uploaded
+        ]);
     }
 
     public function room_type_photo_delete(RoomType $room_type, Photo $photo)

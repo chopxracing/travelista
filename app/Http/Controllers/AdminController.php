@@ -18,6 +18,8 @@ use App\Models\RoomStatus;
 use App\Models\RoomType;
 use App\Models\Tour;
 use App\Models\Tourist;
+use App\Models\TourOperator;
+use App\Models\TourType;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -302,7 +304,7 @@ class AdminController extends Controller
             'description' => 'nullable',
             'check_in_time' => 'string|required',
             'check_out_time' => 'string|required',
-            'preview_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            'preview_image' => 'required|file',
             'is_active' => 'integer|required',
             'email' => 'required|string|email|max:255|unique:hotels',
             'address' => 'nullable|string|max:255',
@@ -347,7 +349,7 @@ class AdminController extends Controller
             'description' => 'nullable',
             'check_in_time' => 'string|nullable',
             'check_out_time' => 'string|nullable',
-            'preview_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'preview_image' => 'nullable|file',
             'is_active' => 'integer|nullable|in:0,1',
             'email' => 'nullable|string|email|max:255|unique:hotels,email,' . $hotel->id,
             'address' => 'nullable|string|max:255',
@@ -382,8 +384,96 @@ class AdminController extends Controller
     }
     public function hotel_delete($id)
     {
+        HotelAmenityArray::where('hotel_id', $id)->delete();
+
         Hotel::destroy($id);
         return redirect()->route('hotel.index');
+    }
+
+    // Круд по турам
+    public function tour_index(Request $request)
+    {
+        $search = $request->get('search');
+        $tours = Tour::with(['country', 'city'])
+            ->when($search, function($query) use ($search) {
+                return $query->where('name', 'like', "%{$search}%");
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+        return view('admin.tour.index', compact('tours', 'search'));
+    }
+    public function tour_show(Tour $tour)
+    {
+        return view('admin.tour.show', compact('tour'));
+    }
+    public function tour_create()
+    {
+        $tour_operators = TourOperator::all();
+        $tour_types = TourType::all();
+        $hotels = Hotel::all();
+        $cities = City::all();
+        $countries = Country::all();
+        return view('admin.tour.create', compact('cities', 'countries', 'tour_operators', 'tour_types', 'hotels'));
+    }
+    public function tour_store(Request $request)
+    {
+
+        $data = $request->validate([
+            'tour_operator_id' => 'required|integer|exists:tour_operators,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'tour_type_id' => 'required|integer|exists:tour_types,id',
+            'price' => 'nullable|integer',
+            'days' => 'nullable|integer',
+            'hotel_id' => 'nullable|integer|exists:hotels,id',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+        ]);
+
+        $hotel = Hotel::where('id', $data['hotel_id'])->first();
+        $data['city_id'] = $hotel->city_id;
+        $data['country_id'] = $hotel->country_id;
+
+        $tour = Tour::create($data);
+
+        return redirect()->route('tour.index');
+    }
+    public function tour_edit(Tour $tour)
+    {
+        $tour_operators = TourOperator::all();
+        $tour_types = TourType::all();
+        $hotels = Hotel::all();
+        $cities = City::all();
+        $countries = Country::all();
+        return view('admin.tour.edit', compact('tour', 'countries', 'cities', 'tour_operators', 'tour_types', 'hotels'));
+    }
+    public function tour_update(Request $request, Tour $tour)
+    {
+        $data = $request->validate([
+            'tour_operator_id' => 'nullable|integer|exists:tour_operators,id',
+            'name' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'tour_type_id' => 'nullable|integer|exists:tour_types,id',
+            'country_id' => 'nullable|integer|exists:countries,id',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'price' => 'nullable|integer',
+            'days' => 'nullable|integer',
+            'hotel_id' => 'nullable|integer|exists:hotels,id',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+        ]);
+
+        $tour->update($data);
+
+        return redirect()->route('tour.show', ['tour' => $tour])
+            ->with('success', 'Отель успешно обновлен!');
+    }
+    public function tour_delete($id)
+    {
+
+
+        Tour::destroy($id);
+        return redirect()->route('tour.index');
     }
 
     // Круд по типам номеров
@@ -516,7 +606,7 @@ class AdminController extends Controller
     public function room_store(Request $request, $hotel, $room_type)
     {
         $data = $request->validate([
-            'room_number' => 'required|string|max:255|unique:rooms,room_number',
+            'room_number' => 'required|string|max:255',
             'floor' => 'required|string|max:255',
             'view_type' => 'required|string|max:255',
             'is_smoking_available' => 'required|integer|in:0,1',
@@ -539,7 +629,7 @@ class AdminController extends Controller
     public function room_update(Request $request, $hotel, $room_type, Room $room)
         {
             $data = $request->validate([
-                'room_number' => 'required|string|max:255|unique:rooms,room_number,' . $room->id,
+                'room_number' => 'required|string|max:255',
                 'floor' => 'required|string|max:255',
                 'view_type' => 'required|string|max:255',
                 'is_smoking_available' => 'required|integer|in:0,1',

@@ -25,3 +25,4 @@ Thumbs.db
 /storage/logs
 /storage/framework
 tmp/db
+public_html

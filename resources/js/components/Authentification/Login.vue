@@ -1,13 +1,39 @@
 <script>
+import axios from 'axios';
 export default {
-    name: "Login",
-
+    data() {
+        return {
+            phone: '',
+            password: '',
+            error: null
+        };
+    },
+    inject: ['fetchUser'],
     methods: {
-        login() {
-            axios.post()
+        async login() {
+            this.error = null;
+
+            try {
+                const response = await axios.post('/api/login', {
+                    phone: this.phone,
+                    password: this.password
+                });
+
+                const token = response.data.token;
+                localStorage.setItem('api_token', token);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                await this.fetchUser();
+                this.$router.push('/');
+            } catch (err) {
+                this.error = 'Ошибка входа';
+                console.error(err.response?.data);
+            }
         }
     },
-}
+    mounted() {
+        $('.fullscreen').css('height', $(window).height());
+    }
+};
 </script>
 
 <template>
@@ -23,23 +49,23 @@ export default {
                     </p>
                 </div>
                 <div class="col-lg-4 col-md-6 banner-right">
-                    <div class="tab-content" id="myTabContent">
-                        <div class="tab-pane fade show active" id="flight" role="tabpanel"
-                             aria-labelledby="flight-tab">
-                            <form class="form-wrap">
-                                <input type="text" class="form-control" name="phone" placeholder="Номер телефона "
-                                       onfocus="this.placeholder = ''" onblur="this.placeholder = 'Номер телефона +7 . . . '">
-                                <input type="password" class="form-control" name="password" placeholder="Пароль "
-                                       onfocus="this.placeholder = ''" onblur="this.placeholder = 'Пароль '">
-                                <input type="submit" class="primary-btn text-uppercase" value="Войти">
+
+                            <form class="form-wrap" @submit.prevent="login">
+                                <input type="text" class="form-control" v-model="phone" placeholder="Номер телефона +7 . . ." />
+                                <input type="password" class="form-control" v-model="password" placeholder="Пароль" />
+                                <button type="submit" class="primary-btn text-uppercase min-vw-100">Войти</button>
                             </form>
-                        </div>
-                    </div>
+                            <router-link :to="{name: 'register'}" class="d-flex justify-content-center primary-btn">
+                                Нет аккаунта? Зарегистрироваться
+                            </router-link>
+                            <p v-if="error" class="text-danger">{{ error }}</p>
+
                 </div>
             </div>
         </div>
     </section>
 </template>
+
 
 <style scoped>
 
