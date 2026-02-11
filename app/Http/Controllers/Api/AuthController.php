@@ -69,22 +69,4 @@ class AuthController extends Controller
            'user' => $data,
         ]);
     }
-    public function verify($id, $hash)
-    {
-        $user = User::findOrFail($id);
-
-        if (sha1($user->email) !== $hash) {
-            return response()->json([
-                'message' => 'Ссылка недействительна'
-            ], 400);
-        }
-
-        $user->email_verified_at = now();
-        $user->save();
-
-        return response()->json([
-            'message' => 'Email успешно подтвержден!',
-            'user' => $user
-        ]);
-    }
 }
