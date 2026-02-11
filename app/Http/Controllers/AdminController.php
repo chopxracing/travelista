@@ -384,7 +384,6 @@ class AdminController extends Controller
     }
     public function hotel_delete($id)
     {
-
         HotelAmenityArray::where('hotel_id', $id)->delete();
 
         Hotel::destroy($id);

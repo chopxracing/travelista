@@ -21,7 +21,7 @@ export default {
 
     methods: {
         getHotel(id) {
-            axios.get(`http://localhost:8876/api/hotels/${this.$route.params.id}`)
+            axios.get(`/api/hotels/${this.$route.params.id}`)
                 .then(res => {
                     this.hotel = res.data.data
                     console.log(res);
@@ -29,7 +29,7 @@ export default {
         },
         getReviews(page = 1) {
             axios
-                .get(`http://localhost:8876/api/reviews/${this.$route.params.id}?page=${page}`)
+                .get(`/api/reviews/${this.$route.params.id}?page=${page}`)
                 .then((res) => {
                     // предполагаем, что API возвращает Laravel пагинацию: data + meta
                     this.reviews.data = res.data.data;

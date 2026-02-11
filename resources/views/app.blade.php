@@ -27,7 +27,9 @@ CSS
 <script src="{{ asset('js/vendor/jquery-2.2.4.min.js') }}"></script>
 <script src="{{ asset('js/popper.min.js') }}"></script>
 <script src="{{ asset('js/vendor/bootstrap.min.js') }}"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhOdIF3Y9382fqJYt5I_sswSrEw5eihAA"></script>
+
+<script src="https://api-maps.yandex.ru/2.1/?apikey=0f1a45ab-d9aa-4121-bdfc-21b758c321d9&lang=ru_RU" type="text/javascript"></script>
+
 <script src="{{ asset('js/jquery-ui.js') }}"></script>
 <script src="{{ asset('js/easing.min.js') }}"></script>
 <script src="{{ asset('js/hoverIntent.js') }}"></script>

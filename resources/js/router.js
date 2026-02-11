@@ -8,6 +8,9 @@ import HotelShow from "./components/HotelShow.vue";
 import Profile from "./components/Authentification/Profile.vue";
 import Tours from "./components/Tours.vue";
 import TourShow from "./components/TourShow.vue";
+import Insurance from "./components/Insurance.vue";
+import Contacts from "./components/Contacts.vue";
+import Blog from "./components/Blog.vue";
 
 const routes = [
     {
@@ -57,12 +60,33 @@ const routes = [
         path: '/tours/:id',
         name: 'tours.show',
         component: TourShow,
+    },
+    {
+        path: '/insurance',
+        name: 'insurance',
+        component: Insurance
+    },
+    {
+        path: '/contacts',
+        name: 'contacts',
+        component: Contacts
+    },
+    {
+        path: '/blog',
+        name: 'blog',
+        component: Blog
     }
 ];
 
 const router = createRouter({
     history: createWebHistory(),
     routes,
+    scrollBehavior(to, from, savedPosition) {
+        if (savedPosition) {
+            return savedPosition;
+        }
+        return { top: 0 };
+    }
 });
 
 export default router;

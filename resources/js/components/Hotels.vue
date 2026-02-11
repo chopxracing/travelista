@@ -1,6 +1,8 @@
 <script>
 import axios from "axios";
-
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.css";
+import { Russian } from "flatpickr/dist/l10n/ru.js";
 export default {
     name: "Hotels",
     data() {
@@ -41,7 +43,7 @@ export default {
     methods: {
         async getCities() {
             try {
-                const res = await axios.get("http://localhost:8876/api/cities");
+                const res = await axios.get("/api/cities");
                 this.cities = res.data.data;
             } catch (err) {
                 console.error(err);
@@ -49,7 +51,7 @@ export default {
         },
         async getCountries() {
             try {
-                const res = await axios.get("http://localhost:8876/api/countries");
+                const res = await axios.get("/api/countries");
                 this.countries = res.data.data;
             } catch (err) {
                 console.error(err);
@@ -57,7 +59,7 @@ export default {
         },
         async getHotels(page = 1) {
             try {
-                const res = await axios.post(`http://localhost:8876/api/hotels?page=${page}`, {
+                const res = await axios.post(`/api/hotels?page=${page}`, {
                     city: this.city_id,
                     country: this.country_id,
                     stars: this.stars,
@@ -84,7 +86,7 @@ export default {
             this.getHotels(1);
         },
         getFilterList() {
-            axios.get(`http://localhost:8876/api/hotels/filters`)
+            axios.get(`/api/hotels/filters`)
                 .then(res => {
                     this.filterList = res.data;
                 });
@@ -115,14 +117,57 @@ export default {
             if (n >= current - 2 && n <= current + 2) return true;
             return false;
         },
+        initFlatpickr(el, modelKey) {
+            if (!el || el._flatpickr) return;
+
+            flatpickr(el, {
+                locale: Russian,
+                dateFormat: "d.m.Y",
+                minDate: "today",
+                onChange: ([date]) => {
+                    if (date) {
+                        // Записываем прямо в check_in / check_out
+                        if (modelKey === 'check_in') this.check_in = date.toISOString().split('T')[0];
+                        if (modelKey === 'check_out') this.check_out = date.toISOString().split('T')[0];
+                    } else {
+                        if (modelKey === 'check_in') this.check_in = null;
+                        if (modelKey === 'check_out') this.check_out = null;
+                    }
+                },
+            });
+        },
+        initHotelFlatpickr() {
+            // Проверяем, есть ли refs
+            if (!this.$refs.tourDateFrom || !this.$refs.tourDateTo) return;
+            this.initFlatpickr(this.$refs.tourDateFrom, "date_from");
+            this.initFlatpickr(this.$refs.tourDateTo, "date_to");
+        },
     },
     mounted() {
         this.getCities();
         this.getCountries();
-        this.getHotels();
+
         this.getFilterList();
+        // flatpickr инициализация
+        this.$nextTick(() => {
+            this.initFlatpickr(this.$refs.hotelDateFrom, "check_in");
+            this.initFlatpickr(this.$refs.hotelDateTo, "check_out");
+        });
+
+        // Слушаем клик вне dropdown
         this.clickOutsideHandler = this.handleClickOutside.bind(this);
         document.addEventListener("click", this.clickOutsideHandler);
+
+        const q = this.$route.query;
+        if (q.city) {
+            this.city_id = Number(q.city);
+            const city = this.cities.find(c => c.id === this.city_id);
+            if (city) this.citySearch = city.name;
+        }
+        if (q.check_in) this.check_in = q.check_in;
+        if (q.check_out) this.check_out = q.check_out;
+
+        this.getHotels();
     },
     beforeUnmount() {
         document.removeEventListener("click", this.clickOutsideHandler);
@@ -156,7 +201,7 @@ export default {
         <div class="container">
             <div class="row">
                 <!-- Sidebar слева -->
-                <div class="col-lg-3">
+                <div class="col-lg-4">
                     <div class="filter-section">
                         <h4 class="section-title">
                             <i class="lnr lnr-filter me-2"></i>Фильтры
@@ -226,13 +271,11 @@ export default {
                         </div>
                         <div class="filter-group mb-3">
                             <label>Дата заезда</label>
-                            <input type="date" v-model="check_in" class="form-control">
+                            <input ref="hotelDateFrom" v-model="check_in" type="text" class="form-control" placeholder="Дата заезда">
                         </div>
-
-
                         <div class="filter-group mb-3">
                             <label>Дата выезда</label>
-                            <input type="date" v-model="check_out" class="form-control">
+                            <input ref="hotelDateTo" v-model="check_out" type="text" class="form-control" placeholder="Дата заезда">
                         </div>
                         <button class="primary-btn w-100 mt-3" @click="applyFilters">
                             Применить фильтры
@@ -241,9 +284,9 @@ export default {
                 </div>
 
                 <!-- Основной контент справа -->
-                <div class="col-lg-9">
+                <div class="col-lg-8">
                     <div class="row">
-                        <div class="col-lg-4 col-md-6 mb-4 d-flex" v-for="hotel in hotels" :key="hotel.id">
+                        <div class="col-lg-6 col-md-6 mb-4 d-flex" v-for="hotel in hotels" :key="hotel.id">
                             <div class="single-destinations d-flex flex-column w-100">
                                 <div class="thumb">
                                     <img :src="`/storage/${hotel.preview_image}`" alt="">

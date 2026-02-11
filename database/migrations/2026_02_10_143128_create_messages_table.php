@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->dropForeign('bookings_room_type_id_foreign');
-            $table->dropColumn('room_type_id');
+        Schema::create('messages', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 191);
+            $table->string('email', 191);
+            $table->string('theme', 191);
+            $table->text('message');
+            $table->timestamps();
         });
     }
 
@@ -22,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->foreignId('room_type_id')->nullable()->after('hotel_id')->constrained('room_types');
-        });
+        Schema::dropIfExists('messages');
     }
 };

@@ -6,12 +6,16 @@ export default {
     data() {
         return {
             isPageLoading: false,
-            userState: reactive({ user: null })
+            userState: reactive({ user: null }),
+            filters: {
+                tour_type_id: null,
+            },
         };
     },
     provide() {
         return {
-            currentUser: this.userState
+            currentUser: this.userState,
+            fetchUser: this.fetchUser
         };
     },
     computed: {
@@ -38,15 +42,15 @@ export default {
     methods: {
         async fetchUser() {
             try {
-                const res = await axios.get('http://localhost:8876/api/user');
-                this.userState.user = res.data; // реактивно обновляется
+                const res = await axios.get('/api/user');
+                this.userState.user = res.data.data; // реактивно обновляется
             } catch {
                 this.userState.user = null;
             }
         },
         async logout() {
             try {
-                await axios.post('http://localhost:8876/api/logout');
+                await axios.post('/api/logout');
             } catch (err) {
                 console.error(err);
             }
@@ -54,7 +58,8 @@ export default {
             localStorage.removeItem('api_token');
             delete axios.defaults.headers.common['Authorization'];
             this.$router.push('/login');
-        }
+        },
+
     },
     mounted() {
         // Берем токен и сразу ставим его в axios
@@ -109,25 +114,9 @@ export default {
                         <li> <router-link to="/about">О нас</router-link> </li>
                         <li><router-link :to="{ name: 'tours'}">Туры</router-link></li>
                         <li><router-link to="/hotels">Отели</router-link></li>
-                        <li><a href="insurance.html">Insurence</a></li>
-                        <li class="menu-has-children"><a href="">Blog</a>
-                            <ul>
-                                <li><a href="blog-home.html">Blog Home</a></li>
-                                <li><a href="blog-single.html">Blog Single</a></li>
-                            </ul>
-                        </li>
-                        <li class="menu-has-children"><a href="">Pages</a>
-                            <ul>
-                                <li><a href="elements.html">Elements</a></li>
-                                <li class="menu-has-children"><a href="">Level 2 </a>
-                                    <ul>
-                                        <li><a href="#">Item One</a></li>
-                                        <li><a href="#">Item Two</a></li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                        <li><a href="contact.html">Contact</a></li>
+                        <li><router-link :to="{name: 'insurance'}">Страхование</router-link></li>
+                        <li><router-link :to="{name: 'blog'}">Наш Блог</router-link></li>
+                        <li><router-link :to="{name: 'contacts'}">Контакты</router-link></li>
                     </ul>
                 </nav><!-- #nav-menu-container -->
             </div>
@@ -140,51 +129,76 @@ export default {
         </transition>
     </router-view>
 
+
+
+    <!-- End testimonial Area -->
+
+    <!-- Start home-about Area -->
+    <section v-if="showLayout" class="home-about-area">
+        <div class="container-fluid">
+            <div class="row align-items-center justify-content-end">
+                <div class="col-lg-6 col-md-12 home-about-left">
+                    <h1>
+                        Не нашли подходящий набор? <br>
+                        Не переживайте! <br>
+                        Мы создадим для вас идеальный вариант
+                    </h1>
+                    <p>
+                        Если вы не нашли то, что искали, просто напишите нам. Мы подберем решение специально для вас, чтобы ваш опыт был максимально удобным и приятным.
+                    </p>
+                    <router-link :to="{name: 'contacts'}" class="primary-btn text-uppercase">Запросить цену</router-link>
+                </div>
+                <div class="col-lg-6 col-md-12 home-about-right no-padding">
+                    <img class="img-fluid" :src="'img/about-img'.jpg" alt="">
+                </div>
+            </div>
+        </div>
+    </section>
     <footer v-if="showLayout" class="footer-area section-gap">
         <div class="container">
 
             <div class="row">
-                <div class="col-lg-3  col-md-6 col-sm-6">
+                <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="single-footer-widget">
-                        <h6>About Agency</h6>
+                        <h6>О компании</h6>
                         <p>
-                            The world has become so fast paced that people don’t want to stand by reading a page of information, they would much rather look at a presentation and understand the message. It has come to a point
+                            Мир движется так быстро, что людям не хочется читать длинные тексты — проще увидеть презентацию и сразу понять суть. Мы создаём решения, которые упрощают вашу жизнь.
                         </p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="single-footer-widget">
-                        <h6>Navigation Links</h6>
+                        <h6>Навигация</h6>
                         <div class="row">
                             <div class="col">
                                 <ul>
-                                    <li><a href="#">Home</a></li>
-                                    <li><a href="#">Feature</a></li>
-                                    <li><a href="#">Services</a></li>
-                                    <li><a href="#">Portfolio</a></li>
+                                    <li><router-link to="/">Главная</router-link></li>
+                                    <li><router-link to="/about">О нас</router-link></li>
+                                    <li><router-link to="/tours">Туры</router-link></li>
+                                    <li><router-link to="/hotels">Отели</router-link></li>
                                 </ul>
                             </div>
                             <div class="col">
                                 <ul>
-                                    <li><a href="#">Team</a></li>
-                                    <li><a href="#">Pricing</a></li>
-                                    <li><a href="#">Blog</a></li>
-                                    <li><a href="#">Contact</a></li>
+                                    <li><a href="#">Команда</a></li>
+                                    <li><a href="#">Цены</a></li>
+                                    <li><a href="#">Блог</a></li>
+                                    <li><router-link :to="{name: 'contacts'}">Контакты</router-link></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3  col-md-6 col-sm-6">
+                <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="single-footer-widget">
-                        <h6>Newsletter</h6>
+                        <h6>Подписка на новости</h6>
                         <p>
-                            For business professionals caught between high OEM price and mediocre print and graphic output.
+                            Получайте полезные материалы, новости и специальные предложения на ваш email.
                         </p>
                         <div id="mc_embed_signup">
                             <form target="_blank" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="subscription relative">
                                 <div class="input-group d-flex flex-row">
-                                    <input name="EMAIL" placeholder="Email Address" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Email Address '" required="" type="email">
+                                    <input name="EMAIL" placeholder="Ваш email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Ваш email'" required="" type="email">
                                     <button class="btn bb-btn"><span class="lnr lnr-location"></span></button>
                                 </div>
                                 <div class="mt-10 info"></div>
@@ -192,9 +206,9 @@ export default {
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3  col-md-6 col-sm-6">
+                <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="single-footer-widget mail-chimp">
-                        <h6 class="mb-20">InstaFeed</h6>
+                        <h6 class="mb-20">Instagram</h6>
                         <ul class="instafeed d-flex flex-wrap">
                             <li><img :src="'/img/i1.jpg'" alt=""></li>
                             <li><img :src="'/img/i2.jpg'" alt=""></li>
@@ -209,17 +223,18 @@ export default {
                 </div>
             </div>
 
-            <div class="row footer-bottom d-flex justify-content-between align-items-center">
-                <p class="col-lg-8 col-sm-12 footer-text m-0"><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                    Copyright &copy; All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
+            <div class="row footer-bottom d-flex justify-content-between align-items-center mt-4">
                 <div class="col-lg-4 col-sm-12 footer-social">
                     <a href="#"><i class="fa fa-facebook"></i></a>
                     <a href="#"><i class="fa fa-twitter"></i></a>
                     <a href="#"><i class="fa fa-dribbble"></i></a>
                     <a href="#"><i class="fa fa-behance"></i></a>
                 </div>
+                <div class="col-lg-8 col-sm-12 text-right">
+                    <p>© 2026 Все права защищены. Travelista</p>
+                </div>
             </div>
+
         </div>
     </footer>
 </template>

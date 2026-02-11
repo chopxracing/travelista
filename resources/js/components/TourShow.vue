@@ -22,14 +22,14 @@ export default {
 
     methods: {
         getHotel(id) {
-            axios.get(`http://localhost:8876/api/hotels/${this.$route.params.id}`)
+            axios.get(`/api/hotels/${this.$route.params.id}`)
                 .then(res => {
                     this.hotel = res.data.data
                     console.log(res);
                 })
         },
         getTour(id) {
-            axios.get(`http://localhost:8876/api/tours/${this.$route.params.id}`)
+            axios.get(`/api/tours/${this.$route.params.id}`)
                 .then(res => {
                     this.tour = res.data.data
                     console.log(res);
@@ -37,7 +37,7 @@ export default {
         },
         getReviews(page = 1) {
             axios
-                .get(`http://localhost:8876/api/reviews/${this.$route.params.id}?page=${page}`)
+                .get(`/api/reviews/${this.$route.params.id}?page=${page}`)
                 .then((res) => {
                     // предполагаем, что API возвращает Laravel пагинацию: data + meta
                     this.reviews.data = res.data.data;
@@ -74,6 +74,38 @@ export default {
             const scrollAmount = 100;
             container.scrollBy({left: scrollAmount * direction, behavior: 'smooth'});
         },
+        calculateRoomPrice(room) {
+            if (!this.tour || !this.hotel) return 0;
+            const diff = room.price - this.hotel.min_price; // разница
+            return this.tour.price + diff * this.tour.days;  // итоговая цена
+        },
+
+        async bookTour(room) {
+            if (!this.user?.id) {
+                alert('Авторизуйтесь');
+                return;
+            }
+
+            const price = this.calculateRoomPrice(room); // <--- важно!
+
+            try {
+                await axios.post('/api/tours/put', {
+                    user_id: this.user.id,
+                    tour_id: this.tour.id,
+                    hotel_id: this.tour.hotel.id,
+                    room_type_id: room.id,
+                    amount: price,            // передаем корректную цену
+                    date_from: this.tour.date_from,
+                    date_to: this.tour.date_to
+                });
+
+                this.$router.push('/profile?tab=cart');
+            } catch (e) {
+                console.error(e);
+                alert('Ошибка добавления в корзину');
+            }
+        }
+
     },
 
     mounted() {
@@ -108,9 +140,9 @@ export default {
                     <p class="text-white link-nav">
                         <router-link :to="{ name: 'index'}">Главная</router-link>
                         <span class="lnr lnr-arrow-right"></span>
-                        <router-link to="/hotels"> Отели</router-link>
+                        <router-link to="/hotels"> Туры</router-link>
                         <span class="lnr lnr-arrow-right"></span>
-                        <span>{{ hotel.name }}</span>
+                        <span>{{ tour.name }}</span>
                     </p>
                 </div>
             </div>
@@ -211,18 +243,15 @@ export default {
                     <!-- Информация о номере -->
                     <div class="room-info">
                         <h4 class="room-name">{{ room.name }}</h4>
-                        <p v-if="room.price === hotel.min_price" class="room-price">
-                            <strong>Цена:</strong> {{ tour ? tour.price : '-' }} руб. {{ tour ? tour.days : '-' }} ночей
-                        </p>
-                        <p v-else class="room-price">
-                            <strong>Цена:</strong> {{ tour ? tour.price + (room.price - hotel.min_price) * tour.days : '-' }} руб. за {{ tour ? tour.days : '-' }} ночей
+                        <p class="room-price">
+                            <strong>Цена:</strong> {{ calculateRoomPrice(room) }} руб. за {{ tour ? tour.days : '-' }} ночей
                         </p>
                         <p class="room-detail"><strong>Кровать:</strong> {{ room.bed_type }}</p>
                         <p class="room-detail"><strong>Вместимость:</strong> {{ room.capacity }} чел.</p>
                         <p class="room-detail"><strong>Площадь:</strong> {{ room.size_sqm }} кв.м.</p>
                         <p class="room-description" v-if="room.description">{{ room.description }}</p>
                         <div v-if="user" class="room-buttons">
-                            <a class="primary-btn">Забронировать</a>
+                            <button type="button" @click="bookTour(room)" class="primary-btn">Забронировать</button>
                         </div>
                         <div v-else>
                             <p>Для бронирования войдите в аккаунт</p>

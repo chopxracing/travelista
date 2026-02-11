@@ -1,5 +1,8 @@
 <script>
 import axios from "axios";
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.css";
+import { Russian } from "flatpickr/dist/l10n/ru.js";
 
 export default {
     name: "Tours",
@@ -14,6 +17,7 @@ export default {
             country_id: null,
             showCityDropdown: false,
             showCountryDropdown: false,
+            tour_type_id: null,
 
             stars: [],
             pricefrom: null,
@@ -41,7 +45,7 @@ export default {
     methods: {
         async getCities() {
             try {
-                const res = await axios.get("http://localhost:8876/api/cities");
+                const res = await axios.get("/api/cities");
                 this.cities = res.data.data;
             } catch (err) {
                 console.error(err);
@@ -49,7 +53,7 @@ export default {
         },
         async getCountries() {
             try {
-                const res = await axios.get("http://localhost:8876/api/countries");
+                const res = await axios.get("/api/countries");
                 this.countries = res.data.data;
             } catch (err) {
                 console.error(err);
@@ -57,12 +61,13 @@ export default {
         },
         async getTours(page = 1) {
             try {
-                const res = await axios.post(`http://localhost:8876/api/tours?page=${page}`, {
+                const res = await axios.post(`/api/tours?page=${page}`, {
                     city: this.city_id,
                     country: this.country_id,
                     stars: this.stars,
                     pricefrom: this.pricefrom,
                     priceto: this.priceto,
+                    tour_type_id: this.tour_type_id,
                     dates: {
                         check_in: this.check_in,
                         check_out: this.check_out
@@ -109,13 +114,65 @@ export default {
             if (n >= current - 2 && n <= current + 2) return true;
             return false;
         },
+        initFlatpickr(el, modelKey) {
+            if (!el || el._flatpickr) return;
+
+            flatpickr(el, {
+                locale: Russian,
+                dateFormat: "d.m.Y",
+                minDate: "today",
+                onChange: ([date]) => {
+                    if (date) {
+                        // Записываем в формате d.m.Y
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear();
+                        const formatted = `${day}.${month}.${year}`;
+
+                        if (modelKey === 'check_in') this.check_in = formatted;
+                        if (modelKey === 'check_out') this.check_out = formatted;
+                    } else {
+                        if (modelKey === 'check_in') this.check_in = null;
+                        if (modelKey === 'check_out') this.check_out = null;
+                    }
+                },
+            });
+        },
+        initHotelFlatpickr() {
+            // Проверяем, есть ли refs
+            if (!this.$refs.tourDateFrom || !this.$refs.tourDateTo) return;
+            this.initFlatpickr(this.$refs.tourDateFrom, "date_from");
+            this.initFlatpickr(this.$refs.tourDateTo, "date_to");
+        },
     },
     mounted() {
         this.getCities();
         this.getCountries();
-        this.getTours();
+
+        // flatpickr инициализация
+        this.$nextTick(() => {
+            this.initFlatpickr(this.$refs.tourDateFrom, "check_in");
+            this.initFlatpickr(this.$refs.tourDateTo, "check_out");
+        });
+
         this.clickOutsideHandler = this.handleClickOutside.bind(this);
         document.addEventListener("click", this.clickOutsideHandler);
+
+        // Если пришли query-параметры, ставим их в фильтры
+        const { city, dates, tour_type_id } = this.$route.query;
+        if (city) this.city_id = parseInt(city);
+        if (tour_type_id) this.tour_type_id = parseInt(tour_type_id);
+
+        if (dates) {
+            try {
+                const d = JSON.parse(dates);
+                this.check_in = d.check_in;
+                this.check_out = d.check_out;
+            } catch {}
+        }
+
+        this.getTours();
+
     },
     beforeUnmount() {
         document.removeEventListener("click", this.clickOutsideHandler);
@@ -219,13 +276,13 @@ export default {
                         </div>
                         <div class="filter-group mb-3">
                             <label>Дата заезда</label>
-                            <input type="date" v-model="check_in" class="form-control">
+                            <input ref="tourDateFrom" v-model="check_in" type="text" class="form-control" placeholder="Дата заезда">
                         </div>
 
 
                         <div class="filter-group mb-3">
                             <label>Дата выезда</label>
-                            <input type="date" v-model="check_out" class="form-control">
+                            <input ref="tourDateTo" v-model="check_out" type="text" class="form-control" placeholder="Дата заезда">
                         </div>
                         <button class="primary-btn w-100 mt-3" @click="applyFilters">
                             Применить фильтры

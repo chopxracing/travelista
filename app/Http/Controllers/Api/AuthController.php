@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\User\VerifyMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -65,6 +67,24 @@ class AuthController extends Controller
         User::create($data);
         return response()->json([
            'user' => $data,
+        ]);
+    }
+    public function verify($id, $hash)
+    {
+        $user = User::findOrFail($id);
+
+        if (sha1($user->email) !== $hash) {
+            return response()->json([
+                'message' => 'Ссылка недействительна'
+            ], 400);
+        }
+
+        $user->email_verified_at = now();
+        $user->save();
+
+        return response()->json([
+            'message' => 'Email успешно подтвержден!',
+            'user' => $user
         ]);
     }
 }

@@ -71,7 +71,7 @@ export default {
 
             try {
                 const response = await axios.post(
-                    'http://localhost:8876/api/register',
+                    '/api/register',
                     {
                         phone: this.phone,
                         email: this.email,
@@ -100,7 +100,7 @@ export default {
         },
         async getCities() {
             try {
-                const res = await axios.get("http://localhost:8876/api/cities");
+                const res = await axios.get("/api/cities");
                 this.cities = res.data.data;
             } catch (err) {
                 console.error(err);
@@ -108,7 +108,7 @@ export default {
         },
         async getCountries() {
             try {
-                const res = await axios.get("http://localhost:8876/api/countries");
+                const res = await axios.get("/api/countries");
                 this.countries = res.data.data;
             } catch (err) {
                 console.error(err);

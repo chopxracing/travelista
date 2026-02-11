@@ -11,7 +11,7 @@ class TourFilter extends AbstractFilter
     const PRICEFROM = 'pricefrom';
     const PRICETO = 'priceto';
     const DATES = 'dates';
-
+    const TOUR_TYPE = 'tour_type_id';
     const STARS = 'stars';
 
     protected function getCallbacks(): array
@@ -23,6 +23,7 @@ class TourFilter extends AbstractFilter
             self::PRICETO => [$this, 'priceTo'],
             self::DATES => [$this, 'dates'],
             self::STARS     => [$this, 'stars'],
+            self::TOUR_TYPE => [$this, 'tourType'],
         ];
     }
     protected function stars(Builder $builder, $value)
@@ -54,17 +55,20 @@ class TourFilter extends AbstractFilter
     {
         $builder->where('price', '<=', $value);
     }
+    protected function tourType(Builder $builder, $value)
+    {
+        $builder->where('tour_type_id', $value);
+    }
 
     protected function dates(Builder $builder, $value)
     {
-        if (!is_array($value) || empty($value['from']) || empty($value['to'])) {
+        if (!is_array($value) || empty($value['check_in']) || empty($value['check_out'])) {
             return;
         }
 
-        $from = $value['from'];
-        $to   = $value['to'];
+        $from = $value['check_in'];
+        $to   = $value['check_out'];
 
-        // пересечение дат
         $builder->whereDate('date_to', '>=', $from)
             ->whereDate('date_from', '<=', $to);
     }

@@ -38,10 +38,15 @@ class BookingResource extends JsonResource
             'room_type' => RoomTypeResource::make(
                 $this->whenLoaded('room_type')
             ),
-
-            'status' => StatusReasource::make(
+            'status' => StatusResource::make(
+                $this->whenLoaded('status')
+            ),
+            'room' => RoomResource::make(
                 $this->whenLoaded('room_type')
             ),
+            'payment' => PaymentResource::make(
+                $this->payment
+            )
         ];
     }
 }

@@ -8,7 +8,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">{{ $hotel->name }}</h1>
+                    <h1 class="m-0">{{ $tour->name }}</h1>
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -29,23 +29,17 @@
                     <div class="card">
                         <div class="card-header d-flex p-3">
                             <div class="mr-3">
-                                <a href="{{ route('hotel.edit', $hotel->id ) }}" class="btn btn-primary">Редактировать</a>
+                                <a href="{{ route('tour.edit', $tour->id ) }}" class="btn btn-primary">Редактировать</a>
                             </div>
-                            <div class="mr-3">
-                                <a href="{{ route('room_type.index', $hotel->id ) }}" class="btn btn-primary">Номера</a>
-                            </div>
-                            <div class="mr-3">
-                                <a href="{{ route('hotel_photo.index', $hotel->id ) }}" class="btn btn-primary">Добавить фото</a>
-                            </div>
-                            <form action="{{ route('hotel.delete', $hotel->id) }}" method="post">
+                            <form action="{{ route('tour.delete', $tour->id) }}" method="post">
                                 @csrf
                                 @method('delete')
                                 <input type="submit" class="btn btn-danger" value="Удалить">
                             </form>
                         </div>
                         <div class="form-group text-center">
-                            <img src="{{ Storage::url($hotel->preview_image) }}"
-                                 alt="{{ $hotel->name }}"
+                            <img src="{{ Storage::url($tour->hotel->preview_image) }}"
+                                 alt="{{ $tour->name }}"
                                  class="img-fluid"
                                  style="max-width: 100%; height: auto; max-height: 400px; object-fit: cover; border-radius: 8px;">
                         </div>
@@ -55,63 +49,43 @@
                                 <tbody>
                                 <tr>
                                     <td>ID</td>
-                                    <td>{{ $hotel->id }}</td>
+                                    <td>{{ $tour->id }}</td>
                                 </tr>
                                 <tr>
                                     <td>Название</td>
-                                    <td>{{ $hotel->name }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Кол-во звезд</td>
-                                    <td>{{ $hotel->stars }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Метров до моря</td>
-                                    <td>@if($hotel->meters_to_sea){{ $hotel->meters_to_sea }}@endif</td>
-                                </tr>
-                                <tr>
-                                    <td>Метров до центра</td>
-                                    <td>@if($hotel->meters_to_center){{ $hotel->meters_to_center }}@endif</td>
+                                    <td>{{ $tour->name }}</td>
                                 </tr>
                                 <tr>
                                     <td>Описание</td>
-                                    <td>{{ $hotel->description }}</td>
+                                    <td>{{ $tour->description }}</td>
                                 </tr>
                                 <tr>
-                                    <td>Время заселения</td>
-                                    <td>{{ $hotel->check_in_time }}</td>
+                                    <td>Тип тура</td>
+                                    <td>{{ $tour->tour_type->name }}</td>
                                 </tr>
                                 <tr>
-                                    <td>Время выселения</td>
-                                    <td>{{ $hotel->check_out_time }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Активен</td>
-                                    <td>{{ $hotel->is_active }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Email</td>
-                                    <td>{{ $hotel->email }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Номер телефона</td>
-                                    <td>{{ $hotel->phone }}</td>
+                                    <td>Метров до центра</td>
+                                    <td>@if($tour->meters_to_center){{ $tour->meters_to_center }}@endif</td>
                                 </tr>
                                 <tr>
                                     <td>Город</td>
-                                    <td>{{ $hotel->country->name }}</td>
+                                    <td>{{ $tour->country->name }}</td>
                                 </tr>
                                 <tr>
                                     <td>Страна</td>
-                                    <td>{{ $hotel->city->name }}</td>
+                                    <td>{{ $tour->city->name }}</td>
                                 </tr>
                                 <tr>
-                                    <td>Полный адрес</td>
-                                    <td>{{ $hotel->address }}</td>
+                                    <td>Цена</td>
+                                    <td>{{ $tour->price }}</td>
                                 </tr>
                                 <tr>
-                                    <td>Удобства</td>
-                                    <td>@foreach($hotel->amenities as $amenity){{$amenity->name}} @endforeach</td>
+                                    <td>Отель</td>
+                                    <td>{{ $tour->hotel }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Даты</td>
+                                    <td>{{ $tour->date_from }} -- {{ $tour->date_to }}</td>
                                 </tr>
                                 </tbody>
                             </table>

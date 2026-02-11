@@ -8,12 +8,13 @@ export default {
             error: null
         };
     },
+    inject: ['fetchUser'],
     methods: {
         async login() {
             this.error = null;
 
             try {
-                const response = await axios.post('http://localhost:8876/api/login', {
+                const response = await axios.post('/api/login', {
                     phone: this.phone,
                     password: this.password
                 });
@@ -21,7 +22,7 @@ export default {
                 const token = response.data.token;
                 localStorage.setItem('api_token', token);
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
+                await this.fetchUser();
                 this.$router.push('/');
             } catch (err) {
                 this.error = 'Ошибка входа';

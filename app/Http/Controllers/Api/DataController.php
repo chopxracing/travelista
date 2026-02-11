@@ -5,17 +5,25 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Filters\HotelFilter;
 use App\Http\Filters\TourFilter;
+use App\Http\Resources\BookingResource;
 use App\Http\Resources\CityResource;
 use App\Http\Resources\CountryResource;
 use App\Http\Resources\HotelResource;
 use App\Http\Resources\ReviewResource;
 use App\Http\Resources\TourResource;
+use App\Models\Booking;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Hotel;
+use App\Models\Messages;
+use App\Models\Payment;
 use App\Models\Review;
 use App\Models\Tour;
+use App\Models\Tourist;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class DataController extends Controller
 {
@@ -121,10 +129,10 @@ class DataController extends Controller
             'pricefrom'  => 'nullable|numeric|min:0',
             'priceto'    => 'nullable|numeric|min:0',
             'dates'      => 'nullable|array',
-            'dates.from' => 'nullable|date',
-            'dates.to'   => 'nullable|date',
+            'tour_type_id' => 'nullable|integer|exists:tour_types,id',
+            'dates.check_in' => 'nullable|date',
+            'dates.check_out' => 'nullable|date',
         ]);
-
         $filter = app()->make(TourFilter::class, [
             'queryParams' => array_filter($data)
         ]);
@@ -146,5 +154,111 @@ class DataController extends Controller
     public function getTour(Tour $tour)
     {
         return new TourResource($tour);
+    }
+
+    public function putToBasket(Request $request)
+    {
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'tour_id' => 'nullable|exists:tours,id',
+            'hotel_id' => 'nullable|exists:hotels,id',
+            'room_type_id' => 'nullable|exists:room_types,id',
+            'date_from' => 'required|date',
+            'date_to' => 'required|date|after:date_from',
+            'amount' => 'required|integer|min:1',
+        ]);
+
+        if (!$data['tour_id'] && !$data['hotel_id']) {
+            return response()->json([
+                'message' => 'Тур или отель обязателен'
+            ], 422);
+        }
+
+        $booking = Booking::create([
+            'user_id' => $data['user_id'],
+            'tour_id' => $data['tour_id'] ?? null,
+            'hotel_id' => $data['hotel_id'] ?? null,
+            'room_type_id' => $data['room_type_id'] ?? null,
+            'date_from' => $data['date_from'],
+            'date_to' => $data['date_to'],
+            'status_id' => 1, // в корзине
+            'is_paid' => 0,
+        ]);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'amount' => $data['amount'],
+        ]);
+
+        return response()->json([
+            'message' => 'Добавлено в корзину',
+            'booking' => $booking
+        ], 201);
+    }
+
+    public function getBookings(Request $request)
+    {
+        $user = $request->user();
+
+        $bookings = Booking::with([
+            'hotel',
+            'tour',
+            'room_type',
+            'status'
+        ])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return BookingResource::collection($bookings);
+    }
+
+    public function saveTourist(Request $request)
+    {
+        $data = $request->validate([
+            'surname'          => 'required|string|max:255',
+            'name'             => 'required|string|max:255',
+            'last_name'        => 'nullable|string|max:255',
+
+            'passport_series'  => 'required|string|max:10',
+            'passport_number'  => 'required|string|max:20',
+            'passport_date'    => 'required|date',
+            'passport_org'     => 'required|string|max:255',
+
+            'birth_date'       => 'required|date',
+        ]);
+        $data['user_id'] = auth()->id();
+
+        $tourist = Tourist::create($data);
+
+        return response()->json([
+            'message' => 'Турист успешно добавлен',
+            'data' => $tourist,
+        ], 201);
+    }
+    public function deleteTourist(Tourist $tourist)
+    {
+        $tourist->delete();
+    }
+
+    public function deleteBooking(Booking $booking)
+    {
+        $booking->payment()->delete();
+        $booking->delete();
+    }
+
+    public function saveMessage(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|max:255',
+            'theme' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+        Messages::create($data);
+        return response()->json([
+            'message' => 'Сообщение успешно сохранено'
+        ], 200);
+
     }
 }
