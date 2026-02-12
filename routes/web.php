@@ -1,11 +1,14 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\ImageController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-
+Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmailRedirect'])
+    ->name('verify-email-redirect')
+    ->middleware('signed');
 Route::get('/{any}', function () {
     return view('app'); // твой app.blade.php
 })->where('any','^(?!admin).*$');
@@ -153,4 +156,3 @@ Route::group(['prefix' => 'admin'], function () {
     });
 });
 
-Route::get('/verify-email/{id}/{hash}', [App\Http\Controllers\Auth\EmailVerificationController::class, 'verify']);

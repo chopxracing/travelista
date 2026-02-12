@@ -24,19 +24,49 @@ export default {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                 await this.fetchUser();
                 this.$router.push('/');
+
             } catch (err) {
-                this.error = 'Ошибка входа';
+                // Разбор ошибок от сервера
+                if (err.response) {
+                    const status = err.response.status;
+                    const message = err.response.data?.message;
+
+                    if (status === 403) {
+                        // Email не подтверждён
+                        this.error = message || 'Email не подтверждён. Проверьте почту.';
+                    } else if (status === 401) {
+                        // Неверные данные
+                        this.error = message || 'Неверный телефон или пароль';
+                    } else {
+                        // Другая ошибка сервера
+                        this.error = message || 'Произошла ошибка при входе';
+                    }
+                } else {
+                    // Сервер недоступен или сеть
+                    this.error = 'Сервер недоступен';
+                }
+
                 console.error(err.response?.data);
             }
         }
+
     },
     mounted() {
         $('.fullscreen').css('height', $(window).height());
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+
+        if (status === 'verified') {
+            alert('Email успешно подтверждён! Можете войти.');
+        } else if (status === 'invalid') {
+            alert('Ссылка недействительна или устарела.');
+        }
     }
 };
 </script>
 
 <template>
+
     <section class="banner-area relative">
         <div class="overlay overlay-bg"></div>
         <div class="container">
@@ -47,6 +77,9 @@ export default {
                     <p class="text-white">
                         Забронируйте путешествие мечты вместе с Travelista
                     </p>
+                    <div v-if="error" class="error-box">
+                        {{ error }}
+                    </div>
                 </div>
                 <div class="col-lg-4 col-md-6 banner-right">
 
@@ -58,8 +91,6 @@ export default {
                             <router-link :to="{name: 'register'}" class="d-flex justify-content-center primary-btn">
                                 Нет аккаунта? Зарегистрироваться
                             </router-link>
-                            <p v-if="error" class="text-danger">{{ error }}</p>
-
                 </div>
             </div>
         </div>
@@ -68,5 +99,13 @@ export default {
 
 
 <style scoped>
-
+.error-box {
+    background-color: #ff5656;
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: 500;
+}
 </style>

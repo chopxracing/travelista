@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Mail\User\VerifyMail;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -28,7 +29,11 @@ class AuthController extends Controller
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Неверные данные'], 401);
         }
-
+        if (!$user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Email не подтверждён. Проверьте почту.'
+            ], 403);
+        }
         // Создание токена
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -64,9 +69,45 @@ class AuthController extends Controller
             'gender' => 'required|integer',
         ]);
         $data['password'] = Hash::make($data['password']);
-        User::create($data);
+        $user = User::create($data);
+
+        event(new Registered($user));
+
         return response()->json([
            'user' => $data,
+            'message' => 'Пользователь зарегистрирован. Проверьте email для подтверждения.',
         ]);
+    }
+
+    public function verifyEmail(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
+
+        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+            return response()->json(['message' => 'Неверная ссылка подтверждения'], 400);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email уже подтвержден']);
+        }
+
+        $user->markEmailAsVerified();
+
+        return response()->json(['message' => 'Email подтвержден']);
+    }
+    public function verifyEmailRedirect(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
+
+        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+            return redirect('http://127.0.0.1:8876/login?status=invalid');
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+        // Редирект на фронт с параметром успеха
+        return redirect('http://127.0.0.1:8876/login?status=verified');
     }
 }
