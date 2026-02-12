@@ -91,7 +91,7 @@ export default {
 
                 // Настраиваем axios для будущих запросов
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
+                alert(response.data.message);
                 this.$router.push('/login');
             } catch (e) {
                 this.error = 'Ошибка регистрации';

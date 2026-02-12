@@ -26,11 +26,16 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return response()->json($request->user());
 });
 
-Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verify'])->name('verification.verify');
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return new UserResource($request->user());
 });
+Route::post('/register', [AuthController::class, 'register']);
+Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+    ->name('api.verify-email')
+    ->middleware('signed');
+
+
 Route::middleware('auth:sanctum')->get('/bookings', [DataController::class, 'getBookings']);
 Route::middleware('auth:sanctum')->post('/tourist', [DataController::class, 'saveTourist']);
 Route::middleware('auth:sanctum')->delete('/tourist/{tourist}', [DataController::class, 'deleteTourist']);
