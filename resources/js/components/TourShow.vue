@@ -21,8 +21,8 @@ export default {
     },
 
     methods: {
-        getHotel(id) {
-            axios.get(`/api/hotels/${this.$route.params.id}`)
+        getHotel() {
+            axios.get(`/api/hotels/${tour.hotel_id}`)
                 .then(res => {
                     this.hotel = res.data.data
                     console.log(res);
