@@ -223,7 +223,7 @@ export default {
                         <div class="col-lg-6 col-md-6 banner-left">
                             <h6 class="text-white">Побег из серых будней</h6>
                             <h1 class="text-white">Ваше идеальное путешествие</h1>
-                            <p class="text-white">Travelista — новые места, новые эмоции, новые воспоминания</p>
+                            <p class="text-white">Заселись — новые места, новые эмоции, новые воспоминания</p>
                             <router-link v-if="currentUser.user" :to="{ name: 'profile' }" class="primary-btn text-uppercase">Начать</router-link>
                             <router-link v-else :to="{ name: 'login' }" class="primary-btn text-uppercase">Начать</router-link>
                         </div>
@@ -558,7 +558,7 @@ export default {
 /* адаптив: на планшете и мобилке убираем, чтобы не было лишних отступов */
 @media (max-width: 768px) {
     .price-area .row > div:nth-child(n+3) {
-        margin-top: 0;
+        margin-top: 80px;
     }
 }
 /* динамика высоты карточек */

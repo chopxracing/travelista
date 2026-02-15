@@ -79,10 +79,6 @@
                                     <td>Дата рождения</td>
                                     <td>{{ $tourist->birth_date }}</td>
                                 </tr>
-                                <tr>
-                                    <td>Страна паспорта</td>
-                                    <td>{{ $tourist->country->name }}</td>
-                                </tr>
                                 </tbody>
                             </table>
                         </div>

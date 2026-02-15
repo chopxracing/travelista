@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -12,8 +14,12 @@ Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmailRedi
 Route::get('/{any}', function () {
     return view('app'); // твой app.blade.php
 })->where('any','^(?!admin).*$');
+
+Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])
+    ->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.store');
 // Админские роуты
-Route::group(['prefix' => 'admin'], function () {
+Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.index');
     // Роуты админ - страны
     Route::group(['prefix' => 'country'], function () {
@@ -155,4 +161,5 @@ Route::group(['prefix' => 'admin'], function () {
         Route::delete('/{room_type}/{photo}', [ImageController::class, 'room_type_photo_delete'])->name('room_type_photo.delete');
     });
 });
+
 

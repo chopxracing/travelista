@@ -13,7 +13,6 @@ export default {
             cart: [],
             loading: false,
             error: null,
-
             showTouristModal: false,
             showBookingModal: false,
             selectedBooking: null,
@@ -155,25 +154,18 @@ export default {
         },
 
         async confirmBooking() {
-            if (!this.selectedBooking || this.selectedTourists.length === 0) {
-                alert('Выберите хотя бы одного туриста!');
-                return;
-            }
+            if (!this.selectedBooking) return;
 
             try {
-                await axios.post(`/api/bookings/${this.selectedBooking.id}/confirm`, {
-                    tourists: this.selectedTourists, // отправляем id туристов
+                const res = await axios.post('/api/payments/create', {
+                    booking_id: this.selectedBooking.id
                 });
 
-                // обновляем список бронирований
-                const res = await axios.get('/api/bookings');
-                this.bookings = res.data.data;
+                window.location.href = res.data.url;
 
-                this.closeBookingModal();
-                alert('Бронирование подтверждено!');
             } catch (error) {
                 console.error(error);
-                alert('Не удалось оформить бронирование');
+                alert('Ошибка при создании платежа');
             }
         }
     },
@@ -479,7 +471,7 @@ export default {
             </div>
 
             <div class="modal-actions">
-                <button class="primary-btn">Перейти к оплате</button>
+                <button class="primary-btn" @click="confirmBooking">Перейти к оплате</button>
                 <button class="btn-cancel" @click="closeBookingModal">Отмена</button>
             </div>
         </div>

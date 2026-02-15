@@ -21,7 +21,9 @@ use App\Models\Tourist;
 use App\Models\TourOperator;
 use App\Models\TourType;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -30,7 +32,11 @@ class AdminController extends Controller
 
     public function index()
     {
-        return view('admin.index');
+        $bookings = Booking::where('status_id', 1)->get();
+        $users = User::all();
+        $end_bookings = Booking::where('status_id', 4)->get();
+        $partners = User::where('role', 'partner')->get();
+        return view('admin.index', compact('bookings', 'users', 'end_bookings', 'partners'));
     }
 
     // Круд по странам
@@ -39,14 +45,17 @@ class AdminController extends Controller
         $countries = Country::all();
         return view('admin.country.index', compact('countries'));
     }
+
     public function country_show(Country $country)
     {
         return view('admin.country.show', compact('country'));
     }
+
     public function country_create()
     {
         return view('admin.country.create');
     }
+
     public function country_store(Request $request)
     {
         $data = $request->validate([
@@ -55,10 +64,12 @@ class AdminController extends Controller
         Country::firstOrCreate($data);
         return redirect()->route('country.index');
     }
+
     public function country_edit(Country $country)
     {
         return view('admin.country.edit', compact('country'));
     }
+
     public function country_update(Request $request, Country $country)
     {
         $data = $request->validate([
@@ -67,6 +78,7 @@ class AdminController extends Controller
         $country->update($data);
         return redirect()->route('country.index');
     }
+
     public function country_delete($id)
     {
         Country::destroy($id);
@@ -79,15 +91,18 @@ class AdminController extends Controller
         $cities = City::all();
         return view('admin.city.index', compact('cities'));
     }
+
     public function city_show(City $city)
     {
         return view('admin.city.show', compact('city'));
     }
+
     public function city_create()
     {
         $countries = Country::all();
         return view('admin.city.create', compact('countries'));
     }
+
     public function city_store(Request $request)
     {
         $data = $request->validate([
@@ -98,10 +113,12 @@ class AdminController extends Controller
 
         return redirect()->route('city.index');
     }
+
     public function city_edit(City $city)
     {
         return view('admin.city.edit', compact('city'));
     }
+
     public function city_update(Request $request, City $city)
     {
         $data = $request->validate([
@@ -110,6 +127,7 @@ class AdminController extends Controller
         $city->update($data);
         return redirect()->route('city.index');
     }
+
     public function city_delete($id)
     {
         City::destroy($id);
@@ -123,14 +141,17 @@ class AdminController extends Controller
         $room_amenities = RoomAmenity::all();
         return view('admin.room_amenity.index', compact('room_amenities'));
     }
+
     public function room_amenity_show(RoomAmenity $room_amenity)
     {
         return view('admin.room_amenity.show', compact('room_amenity'));
     }
+
     public function room_amenity_create()
     {
         return view('admin.room_amenity.create');
     }
+
     public function room_amenity_store(Request $request)
     {
         $data = $request->validate([
@@ -139,10 +160,12 @@ class AdminController extends Controller
         RoomAmenity::firstOrCreate($data);
         return redirect()->route('room_amenity.index');
     }
+
     public function room_amenity_edit(RoomAmenity $room_amenity)
     {
         return view('admin.room_amenity.edit', compact('room_amenity'));
     }
+
     public function room_amenity_update(Request $request, RoomAmenity $room_amenity)
     {
         $data = $request->validate([
@@ -151,6 +174,7 @@ class AdminController extends Controller
         $room_amenity->update($data);
         return redirect()->route('room_amenity.index');
     }
+
     public function room_amenity_delete($id)
     {
         RoomAmenity::destroy($id);
@@ -163,14 +187,17 @@ class AdminController extends Controller
         $hotel_amenities = HotelAmenity::all();
         return view('admin.hotel_amenity.index', compact('hotel_amenities'));
     }
+
     public function hotel_amenity_show(HotelAmenity $hotel_amenity)
     {
         return view('admin.hotel_amenity.show', compact('hotel_amenity'));
     }
+
     public function hotel_amenity_create()
     {
         return view('admin.hotel_amenity.create');
     }
+
     public function hotel_amenity_store(Request $request)
     {
         $data = $request->validate([
@@ -179,10 +206,12 @@ class AdminController extends Controller
         HotelAmenity::firstOrCreate($data);
         return redirect()->route('hotel_amenity.index');
     }
+
     public function hotel_amenity_edit(HotelAmenity $hotel_amenity)
     {
         return view('admin.hotel_amenity.edit', compact('hotel_amenity'));
     }
+
     public function hotel_amenity_update(Request $request, HotelAmenity $hotel_amenity)
     {
         $data = $request->validate([
@@ -191,6 +220,7 @@ class AdminController extends Controller
         $hotel_amenity->update($data);
         return redirect()->route('hotel_amenity.index');
     }
+
     public function hotel_amenity_delete($id)
     {
         HotelAmenity::destroy($id);
@@ -213,17 +243,20 @@ class AdminController extends Controller
         $users = $query->orderBy('id', 'desc')->paginate(10);
         return view('admin.user.index', compact('users'));
     }
+
     public function user_show(User $user)
     {
         $tourist = $user->tourist;
         return view('admin.user.show', compact('user', 'tourist'));
     }
+
     public function user_create()
     {
         $cities = City::all();
         $countries = Country::all();
         return view('admin.user.create', compact('cities', 'countries'));
     }
+
     public function user_store(Request $request)
     {
         $data = $request->validate([
@@ -241,12 +274,14 @@ class AdminController extends Controller
         User::firstOrCreate($data);
         return redirect()->route('user.index');
     }
+
     public function user_edit(User $user)
     {
         $countries = Country::all();
         $cities = City::all();
         return view('admin.user.edit', compact('user', 'countries', 'cities'));
     }
+
     public function user_update(Request $request, User $user)
     {
         $data = $request->validate([
@@ -263,6 +298,7 @@ class AdminController extends Controller
         $user->update($data);
         return redirect()->route('user.show', ['user' => $user]);
     }
+
     public function user_delete($id)
     {
         User::destroy($id);
@@ -273,26 +309,43 @@ class AdminController extends Controller
     // Круд по отелям
     public function hotel_index(Request $request)
     {
-        $search = $request->get('search');
-        $hotels = Hotel::with(['country', 'city'])
-            ->when($search, function($query) use ($search) {
-                return $query->where('name', 'like', "%{$search}%");
-            })
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        $user = Auth::user();
+        if ($user->role == 'partner') {
+            $search = $request->get('search');
+            $hotels = Hotel::with(['country', 'city'])
+                ->when($search, function ($query) use ($search) {
+                    return $query->where('name', 'like', "%{$search}%");
+                })
+                ->where('phone', 'like', "%{$user->phone}%")
+                ->orderBy('id', 'desc')
+                ->paginate(10);
+        } else {
+
+
+            $search = $request->get('search');
+            $hotels = Hotel::with(['country', 'city'])
+                ->when($search, function ($query) use ($search) {
+                    return $query->where('name', 'like', "%{$search}%");
+                })
+                ->orderBy('id', 'desc')
+                ->paginate(10);
+        }
         return view('admin.hotel.index', compact('hotels', 'search'));
     }
+
     public function hotel_show(Hotel $hotel)
     {
         return view('admin.hotel.show', compact('hotel'));
     }
+
     public function hotel_create()
     {
         $hotel_amenities = HotelAmenity::all();
         $cities = City::all();
         $countries = Country::all();
-        return view('admin.hotel.create', compact('cities', 'countries',  'hotel_amenities'));
+        return view('admin.hotel.create', compact('cities', 'countries', 'hotel_amenities'));
     }
+
     public function hotel_store(Request $request)
     {
 
@@ -331,6 +384,7 @@ class AdminController extends Controller
 
         return redirect()->route('hotel.index');
     }
+
     public function hotel_edit(Hotel $hotel)
     {
         $countries = Country::all();
@@ -339,6 +393,7 @@ class AdminController extends Controller
         $selectedAmenities = $hotel->amenities->pluck('id')->toArray();
         return view('admin.hotel.edit', compact('hotel', 'countries', 'cities', 'hotel_amenities', 'selectedAmenities'));
     }
+
     public function hotel_update(Request $request, Hotel $hotel)
     {
         $data = $request->validate([
@@ -382,6 +437,7 @@ class AdminController extends Controller
         return redirect()->route('hotel.show', ['hotel' => $hotel])
             ->with('success', 'Отель успешно обновлен!');
     }
+
     public function hotel_delete($id)
     {
         HotelAmenityArray::where('hotel_id', $id)->delete();
@@ -395,17 +451,19 @@ class AdminController extends Controller
     {
         $search = $request->get('search');
         $tours = Tour::with(['country', 'city'])
-            ->when($search, function($query) use ($search) {
+            ->when($search, function ($query) use ($search) {
                 return $query->where('name', 'like', "%{$search}%");
             })
             ->orderBy('id', 'desc')
             ->paginate(10);
         return view('admin.tour.index', compact('tours', 'search'));
     }
+
     public function tour_show(Tour $tour)
     {
         return view('admin.tour.show', compact('tour'));
     }
+
     public function tour_create()
     {
         $tour_operators = TourOperator::all();
@@ -415,6 +473,7 @@ class AdminController extends Controller
         $countries = Country::all();
         return view('admin.tour.create', compact('cities', 'countries', 'tour_operators', 'tour_types', 'hotels'));
     }
+
     public function tour_store(Request $request)
     {
 
@@ -438,6 +497,7 @@ class AdminController extends Controller
 
         return redirect()->route('tour.index');
     }
+
     public function tour_edit(Tour $tour)
     {
         $tour_operators = TourOperator::all();
@@ -447,6 +507,7 @@ class AdminController extends Controller
         $countries = Country::all();
         return view('admin.tour.edit', compact('tour', 'countries', 'cities', 'tour_operators', 'tour_types', 'hotels'));
     }
+
     public function tour_update(Request $request, Tour $tour)
     {
         $data = $request->validate([
@@ -468,6 +529,7 @@ class AdminController extends Controller
         return redirect()->route('tour.show', ['tour' => $tour])
             ->with('success', 'Отель успешно обновлен!');
     }
+
     public function tour_delete($id)
     {
 
@@ -486,6 +548,7 @@ class AdminController extends Controller
             'hotelId' => $hotel,
         ]);
     }
+
     public function room_type_show($hotel, RoomType $room_type, Request $request)
     {
 
@@ -493,7 +556,7 @@ class AdminController extends Controller
         $room_type->load('amenities');
         $search = $request->get('search');
         $rooms = Room::where('room_type_id', $room_type->id)
-            ->when($search, function($query) use ($search) {
+            ->when($search, function ($query) use ($search) {
                 return $query->where('room_number', 'like', "%{$search}%");
             })
             ->orderBy('id', 'desc')
@@ -506,6 +569,7 @@ class AdminController extends Controller
             'rooms' => $rooms,
         ], compact('fullhotel'));
     }
+
     public function room_type_create($hotel)
     {
         $room_amenities = RoomAmenity::all();
@@ -513,6 +577,7 @@ class AdminController extends Controller
             'hotelId' => $hotel,
         ], compact('room_amenities'));
     }
+
     public function room_type_store(Request $request, $hotel)
     {
         $data = $request->validate([
@@ -544,6 +609,7 @@ class AdminController extends Controller
         }
         return redirect()->route('room_type.index', ['hotel' => $hotel]);
     }
+
     public function room_type_edit($hotel, RoomType $room_type)
     {
         $room_amenities = RoomAmenity::all();
@@ -552,6 +618,7 @@ class AdminController extends Controller
             'hotelId' => $hotel,
         ], compact('room_type', 'room_amenities', 'selectedAmenities'));
     }
+
     public function room_type_update(Request $request, $hotel, RoomType $room_type)
     {
         $data = $request->validate([
@@ -587,6 +654,7 @@ class AdminController extends Controller
             ->route('room_type.show', ['hotel' => $hotel, 'room_type' => $room_type])
             ->with('success', 'Тип номера успешно обновлён!');
     }
+
     public function room_type_delete($hotel, $id)
     {
         RoomType::destroy($id);
@@ -603,6 +671,7 @@ class AdminController extends Controller
             'room_type' => $room_type,
         ], compact('room_statuses'));
     }
+
     public function room_store(Request $request, $hotel, $room_type)
     {
         $data = $request->validate([
@@ -618,6 +687,7 @@ class AdminController extends Controller
 
         return redirect()->route('room_type.show', ['hotel' => $hotel, 'room_type' => $room_type]);
     }
+
     public function room_edit($hotel, $room_type, Room $room)
     {
         $room_statuses = RoomStatus::all();
@@ -626,23 +696,25 @@ class AdminController extends Controller
             'room_type' => $room_type,
         ], compact('room', 'room_statuses'));
     }
+
     public function room_update(Request $request, $hotel, $room_type, Room $room)
-        {
-            $data = $request->validate([
-                'room_number' => 'required|string|max:255',
-                'floor' => 'required|string|max:255',
-                'view_type' => 'required|string|max:255',
-                'is_smoking_available' => 'required|integer|in:0,1',
-                'room_status_id' => 'required|integer|exists:room_statuses,id',
-            ]);
-            $data['hotel_id'] = $hotel;
-            $data['room_type_id'] = $room_type;
-            $room->update($data);
+    {
+        $data = $request->validate([
+            'room_number' => 'required|string|max:255',
+            'floor' => 'required|string|max:255',
+            'view_type' => 'required|string|max:255',
+            'is_smoking_available' => 'required|integer|in:0,1',
+            'room_status_id' => 'required|integer|exists:room_statuses,id',
+        ]);
+        $data['hotel_id'] = $hotel;
+        $data['room_type_id'] = $room_type;
+        $room->update($data);
 
 
-            return redirect()->route('room_type.show', ['hotel' => $hotel, 'room_type' => $room_type])
-                ->with('success', 'Номер успешно обновлен!');
-        }
+        return redirect()->route('room_type.show', ['hotel' => $hotel, 'room_type' => $room_type])
+            ->with('success', 'Номер успешно обновлен!');
+    }
+
     public function room_delete($hotel, $room_type, $id)
     {
         Room::destroy($id);
@@ -658,19 +730,23 @@ class AdminController extends Controller
 
         if ($search) {
             $query->where('user_id', 'like', '%' . $search . '%')
-                ->orWhere('name', 'like', '%' . $search . '%')
-                ->orWhere('status_id', 'like', '%' . $search . '%');
+                ->orWhere('id', 'like', '%' . $search . '%')
+                ->orWhereHas('status', function (Builder $query) use ($search) {
+                    $query->where('name', 'like', '%' . $search . '%');
+                });
         }
 
         $bookings = $query->orderBy('id', 'desc')->paginate(10);
         return view('admin.booking.index', compact('bookings'));
     }
+
     public function booking_show(Booking $booking)
     {
         $booking_tourist_count = $booking->booking_tourists->count();
         $tourist = $booking->tourist;
         return view('admin.booking.show', compact('booking', 'tourist', 'booking_tourist_count'));
     }
+
     public function booking_create()
     {
         $users = User::all();
@@ -680,6 +756,7 @@ class AdminController extends Controller
         $tours = Tour::all();
         return view('admin.booking.create', compact('hotels', 'statuses', 'room_types', 'users', 'tours'));
     }
+
     public function booking_store(Request $request)
     {
         $data = $request->validate([
@@ -695,13 +772,15 @@ class AdminController extends Controller
         Booking::create($data);
         return redirect()->route('booking.index');
     }
+
     public function booking_edit(Booking $booking)
     {
         $hotels = Hotel::all();
         $statuses = BookingStatus::all();
         $room_types = RoomType::all();
-        return view('admin.booking.edit', compact('booking', 'hotels', 'statuses' , 'room_types'));
+        return view('admin.booking.edit', compact('booking', 'hotels', 'statuses', 'room_types'));
     }
+
     public function booking_update(Request $request, Booking $booking)
     {
         $data = $request->validate([
@@ -714,6 +793,7 @@ class AdminController extends Controller
         $booking->update($data);
         return redirect()->route('booking.show', ['booking' => $booking]);
     }
+
     public function booking_delete($id)
     {
         Booking::destroy($id);
@@ -729,6 +809,7 @@ class AdminController extends Controller
             'tourists' => $tourists,
         ]);
     }
+
     public function booking_tourist_create($bookingId)
     {
         $tourists = Tourist::all();
@@ -737,6 +818,7 @@ class AdminController extends Controller
             'tourists' => $tourists,
         ]);
     }
+
     public function booking_tourist_store(Request $request, $bookingId)
     {
         $data = $request->validate([
@@ -746,6 +828,7 @@ class AdminController extends Controller
         BookingTourists::create($data);
         return redirect()->route('booking_tourist.index', ['booking' => $bookingId]);
     }
+
     public function booking_tourist_delete($booking, $id)
     {
         BookingTourists::destroy($id);
@@ -764,8 +847,7 @@ class AdminController extends Controller
             // если ввели ТОЛЬКО число - ищем по id
             if (ctype_digit($search)) {
                 $query->where('id', (int)$search);
-            }
-            //поиск по ФИО
+            } //поиск по ФИО
             else {
                 $words = preg_split('/\s+/', $search);
 
@@ -790,11 +872,13 @@ class AdminController extends Controller
     {
         return view('admin.tourist.show', compact('tourist'));
     }
+
     public function tourist_create()
     {
         $users = User::all();
         return view('admin.tourist.create', compact('users'));
     }
+
     public function tourist_store(Request $request)
     {
         $data = $request->validate([
@@ -812,11 +896,13 @@ class AdminController extends Controller
         User::firstOrCreate($data);
         return redirect()->route('tourist.index');
     }
+
     public function tourist_edit(Tourist $tourist)
     {
         $countries = Country::all();
-        return view('admin.tourist.edit', compact( 'countries', 'tourist'));
+        return view('admin.tourist.edit', compact('countries', 'tourist'));
     }
+
     public function tourist_update(Request $request, Tourist $tourist)
     {
         $data = $request->validate([
@@ -833,6 +919,7 @@ class AdminController extends Controller
         $tourist->update($data);
         return redirect()->route('tourist.show', ['tourist' => $tourist]);
     }
+
     public function tourist_delete($id)
     {
         Tourist::destroy($id);
