@@ -1,6 +1,7 @@
 <script>
 import axios from "axios";
-import { inject, computed } from "vue";
+import {inject, computed} from "vue";
+
 export default {
     name: "HotelShow",
     setup() {
@@ -9,7 +10,7 @@ export default {
         // Если в provide мы сделали reactive объект:
         const user = computed(() => currentUser.user);
 
-        return { user };
+        return {user};
     },
     data() {
         return {
@@ -21,18 +22,12 @@ export default {
     },
 
     methods: {
-        getHotel() {
-            axios.get(`/api/hotels/${tour.hotel_id}`)
-                .then(res => {
-                    this.hotel = res.data.data
-                    console.log(res);
-                })
-        },
-        getTour(id) {
+        getTour() {
             axios.get(`/api/tours/${this.$route.params.id}`)
                 .then(res => {
                     this.tour = res.data.data
-                    console.log(res);
+                    // после получения тура — грузим отель
+                    this.hotel = this.tour.hotel
                 })
         },
         getReviews(page = 1) {
@@ -92,7 +87,7 @@ export default {
                 await axios.post('/api/tours/put', {
                     user_id: this.user.id,
                     tour_id: this.tour.id,
-                    hotel_id: this.tour.hotel.id,
+                    hotel_id: this.hotel.id,
                     room_type_id: room.id,
                     amount: price,            // передаем корректную цену
                     date_from: this.tour.date_from,
@@ -109,7 +104,6 @@ export default {
     },
 
     mounted() {
-        this.getHotel();
         this.getReviews();
         this.getTour()
     },
@@ -142,7 +136,7 @@ export default {
                         <span class="lnr lnr-arrow-right"></span>
                         <router-link to="/hotels"> Туры</router-link>
                         <span class="lnr lnr-arrow-right"></span>
-                        <span>{{ tour.name }}</span>
+                        <span v-if="tour">{{ tour.name }}</span>
                     </p>
                 </div>
             </div>
@@ -183,10 +177,12 @@ export default {
 
                 <!-- Информация -->
                 <div class="col-lg-6">
-                    <h2 class="hotel-title">{{ hotel.name }} <div class="hotel-rating mb-2">
-                        <span v-for="n in hotel.stars" :key="'filled-'+n" class="fa fa-star checked"></span>
-                        <span v-for="n in 5 - hotel.stars" :key="'empty-'+n" class="fa fa-star"></span>
-                    </div></h2>
+                    <h2 class="hotel-title">{{ hotel.name }}
+                        <div class="hotel-rating mb-2">
+                            <span v-for="n in hotel.stars" :key="'filled-'+n" class="fa fa-star checked"></span>
+                            <span v-for="n in 5 - hotel.stars" :key="'empty-'+n" class="fa fa-star"></span>
+                        </div>
+                    </h2>
                     <div class="hotel-average-rating" v-if="rating">
                         <strong>Средний рейтинг:</strong> {{ rating }}/5
                     </div>
@@ -244,7 +240,8 @@ export default {
                     <div class="room-info">
                         <h4 class="room-name">{{ room.name }}</h4>
                         <p class="room-price">
-                            <strong>Цена:</strong> {{ calculateRoomPrice(room) }} руб. за {{ tour ? tour.days : '-' }} ночей
+                            <strong>Цена:</strong> {{ calculateRoomPrice(room) }} руб. за {{ tour ? tour.days : '-' }}
+                            ночей
                         </p>
                         <p class="room-detail"><strong>Кровать:</strong> {{ room.bed_type }}</p>
                         <p class="room-detail"><strong>Вместимость:</strong> {{ room.capacity }} чел.</p>
@@ -710,11 +707,13 @@ export default {
         height: 35px;
     }
 }
+
 .hotel-average-rating {
     margin-bottom: 15px;
     font-size: 16px;
     color: #333;
 }
+
 .hotel-average-rating .fa-star,
 .hotel-average-rating .fa-star-half-alt {
     color: #faab34;
