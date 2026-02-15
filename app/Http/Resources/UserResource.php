@@ -28,6 +28,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'address' => $this->address,
             'gender' => $this->gender,
+            'role' => $this->role,
             'tourists' => TouristResource::collection($this->tourists),
         ];
     }

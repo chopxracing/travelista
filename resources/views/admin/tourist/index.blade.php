@@ -77,7 +77,6 @@
                                     <th>Дата выдачи</th>
                                     <th>Выдан</th>
                                     <th>Дата рождения</th>
-                                    <th>Страна</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -99,7 +98,6 @@
                                         <td>{{ $tourist->passport_date }}</td>
                                         <td>{{ $tourist->passport_org }}</td>
                                         <td>{{ $tourist->birth_date }}</td>
-                                        <td>{{ $tourist->country->name }}</td>
                                     </tr>
                                 @empty
                                     <tr>

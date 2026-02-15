@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DataController;
+use App\Http\Controllers\Api\PartnerController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Resources\BookingResource;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -44,3 +46,22 @@ Route::middleware('auth:sanctum')->delete('/bookings/{booking}', [DataController
 
 
 Route::middleware('auth:sanctum')->post('/contacts', [DataController::class, 'saveMessage']);
+
+
+//платежка
+Route::post('/payments/create', [PaymentController::class, 'create'])
+    ->middleware('auth:sanctum');
+
+Route::post('/payments/callback', [PaymentController::class, 'callback'])
+    ->name('payment.callback');
+
+// Postman collection
+
+Route::post('/partnerLogin', [PartnerController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/hotelEvents', [PartnerController::class, 'hotelEvents']);
+    Route::post('/roomEvents', [PartnerController::class, 'roomEvents']);
+    Route::get('/getHotel', [PartnerController::class, 'getHotel']);
+});
+

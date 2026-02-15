@@ -43,7 +43,7 @@ export default {
         async fetchUser() {
             try {
                 const res = await axios.get('/api/user');
-                this.userState.user = res.data.data; // реактивно обновляется
+                this.userState.user = res.data.data;// реактивно обновляется
             } catch {
                 this.userState.user = null;
             }
@@ -89,6 +89,12 @@ export default {
                             <li v-if="user"> <router-link :to="{name: 'profile'}"> {{ user.surname }} {{ user.name }} </router-link>
                             </li>
                             <li v-else> <router-link :to="{name: 'login'}">Войти в личный кабинет</router-link>
+                            </li>
+                            <li v-if="user?.role === 'admin'">
+                                <a href="/admin/login">Войти в админ-панель</a>
+                            </li>
+                            <li v-if="user?.role === 'partner'">
+                                <a href="/admin/login">Войти в панель партнера</a>
                             </li>
                         </ul>
                     </div>
@@ -231,7 +237,7 @@ export default {
                     <a href="#"><i class="fa fa-behance"></i></a>
                 </div>
                 <div class="col-lg-8 col-sm-12 text-right">
-                    <p>© 2026 Все права защищены. Travelista</p>
+                    <p>© 2026 Все права защищены. Заселись</p>
                 </div>
             </div>
 
