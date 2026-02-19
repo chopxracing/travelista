@@ -47,6 +47,10 @@
                                     <td>Наименование</td>
                                     <td>{{ $city->name }}</td>
                                 </tr>
+                                <tr>
+                                    <td>IATA</td>
+                                    <td>{{ $city->iata_code }}</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>

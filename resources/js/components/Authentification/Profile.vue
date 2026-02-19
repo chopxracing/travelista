@@ -1,6 +1,6 @@
 <script>
 import axios from 'axios';
-
+import airlinesList from "../../airlinesList.js";
 export default {
     name: 'UserProfile',
 
@@ -37,6 +37,15 @@ export default {
             },
 
             birth_date: '',
+
+            origin: null,
+            flights: [],
+            backflights: [],
+            selectedFlight: null,
+            selectedBackFlight: null,
+            loadingFlights: false,
+            flightCombos: [],
+            selectedFlightCombo: null,
 
         };
     },
@@ -100,24 +109,24 @@ export default {
         },
         async saveTourist() {
             try {
-            await axios.post('/api/tourist', {
-                surname: this.surname,
-                name: this.name,
-                last_name: this.last_name,
-                passport_series: this.passport_series,
-                passport_number: this.passport_number,
-                passport_date: this.passport_date,
-                passport_org: this.passport_org,
-                birth_date: this.birth_date,
-            })
+                await axios.post('/api/tourist', {
+                    surname: this.surname,
+                    name: this.name,
+                    last_name: this.last_name,
+                    passport_series: this.passport_series,
+                    passport_number: this.passport_number,
+                    passport_date: this.passport_date,
+                    passport_org: this.passport_org,
+                    birth_date: this.birth_date,
+                })
                 const res = await axios.get('/api/user'); // endpoint с текущим пользователем
                 this.currentUser.user = res.data.data;
 
-            this.closeTouristModal();
-        } catch (e) {
-            console.error(e);
-            alert('Ошибка при сохранении данных');
-        }
+                this.closeTouristModal();
+            } catch (e) {
+                console.error(e);
+                alert('Ошибка при сохранении данных');
+            }
         },
         async deleteTourist(id) {
             try {
@@ -144,15 +153,19 @@ export default {
         openBookingModal(booking) {
             this.selectedBooking = booking;
             this.showBookingModal = true;
-            this.selectedTourists = []; // сброс выбранных туристов
-        },
+            this.selectedTourists = [];
+            this.selectedFlightCombo = null;
+            this.loadingFlights = true;
+            this.flightCombos = [];
+            this.getFlights(booking);
 
+        },
         closeBookingModal() {
             this.showBookingModal = false;
             this.selectedBooking = null;
             this.selectedTourists = [];
+            this.selectedFlightCombo = null;
         },
-
         async confirmBooking() {
             if (!this.selectedBooking) return;
 
@@ -167,7 +180,77 @@ export default {
                 console.error(error);
                 alert('Ошибка при создании платежа');
             }
+        },
+        async getFlights(booking) {
+            if (!booking.tour) {
+                this.flights = [];
+                this.backflights = [];
+                this.loadingFlights = false;
+                return;
+            }
+
+            const origin = this.currentUser.user.city?.iata_code;
+            const destination = booking.tour.city?.iata_code;
+            const depart_at = booking.tour.date_from;
+            const return_at = booking.tour.date_to;
+
+            if (!origin || !destination || !depart_at || !return_at) return;
+
+            this.loadingFlights = true;
+
+            try {
+                const resTo = await axios.get('/api/flights', { params: { origin, destination, depart_at, return_at: null } });
+                const resBack = await axios.get('/api/flights', { params: { origin: destination, destination: origin, depart_at: return_at } });
+
+                const flightsTo = resTo.data.map(f => ({
+                    ...f,
+                    airline_name: airlinesList[f.airline] || f.airline,
+                    arrival_at: this.computeArrival(f.departure_at, f.duration_to)
+                }));
+
+                const flightsBack = resBack.data.map(f => ({
+                    ...f,
+                    airline_name: airlinesList[f.airline] || f.airline,
+                    arrival_at: this.computeArrival(f.departure_at, f.duration_back)
+                }));
+
+                // создаём комбинации
+                this.flightCombos = [];
+                flightsTo.forEach(to => {
+                    flightsBack.forEach(back => {
+                        this.flightCombos.push({
+                            to,
+                            back,
+                            totalPrice: (to.price || 0) + (back.price || 0),
+                            transfers: to.transfers || 0,
+                            return_transfers: back.transfers || 0
+                        });
+                    });
+                });
+
+                // Найти самую дешевую комбинацию
+                if (this.flightCombos.length > 0) {
+                    const minPrice = Math.min(...this.flightCombos.map(c => c.totalPrice));
+                    this.flightCombos.forEach(combo => {
+                        combo.basePrice = minPrice;
+                        combo.priceAddition = combo.totalPrice - minPrice;
+                    });
+                }
+
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.loadingFlights = false;
+            }
+        },
+
+        computeArrival(departure, durationMinutes) {
+            if (!departure || !durationMinutes) return '-';
+            const dep = new Date(departure);
+            const arr = new Date(dep.getTime() + durationMinutes * 60 * 1000);
+            return `${arr.getHours().toString().padStart(2,'0')}:${arr.getMinutes().toString().padStart(2,'0')}`;
         }
+
     },
     computed: {
         currentYear() {
@@ -325,7 +408,7 @@ export default {
             <div v-if="activeTab==='tourists'" class="tab-content">
                 <div class="table-card p-4 shadow-sm rounded">
                     <div class="row">
-                    <h4 class="p-3">Мои данные</h4>
+                        <h4 class="p-3">Мои данные</h4>
                         <button class="primary-btn ml-2" @click="openTouristModal">
                             Добавить
                         </button>
@@ -356,8 +439,8 @@ export default {
                             <td>{{ tourist.birth_date }}</td>
                             <td><button class="btn btn-danger" @click="deleteTourist(tourist.id)">Удалить</button></td>
                         </tr>
-                        <tr v-if="bookings.length===0">
-                            <td colspan="4" class="text-center">Нет бронирований</td>
+                        <tr v-if="currentUser.user.tourists.length===0">
+                            <td colspan="4" class="text-center">Здесь пока пусто</td>
                         </tr>
                         </tbody>
                     </table>
@@ -468,10 +551,58 @@ export default {
                     <p v-else>Нет добавленных туристов. Добавьте их в разделе "Данные".</p>
                 </div>
 
+                <!-- Спиннер загрузки рейсов -->
+                <div v-if="loadingFlights" class="spinner-wrapper">
+                    <div class="spinner"></div>
+                    <p>Загрузка рейсов...</p>
+                </div>
+
+                <div v-if="!loadingFlights && flightCombos.length" class="flights-wrapper">
+                    <h5 class="flights-title">Выберите рейс туда и обратно</h5>
+                    <div class="flights-scroll">
+                        <div v-for="(combo, index) in flightCombos" :key="index" class="flight-combo-card">
+                            <label class="combo-label">
+                                <div class="radio-wrapper">
+                                    <input type="radio" :value="combo" v-model="selectedFlightCombo" />
+                                </div>
+                                <div class="flight-info">
+                                    <div class="flight-leg">
+                                        <div class="flight-header">Туда</div>
+                                        <div class="flight-details">
+                                            <span>{{ combo.to.origin }} → {{ combo.to.destination }}</span>
+                                            <span>{{ combo.to.departure_at.substring(11,16) }} – {{ combo.to.arrival_at }}</span>
+                                            <span>{{ combo.to.airline_name }} {{ combo.to.flight_number }}</span>
+                                            <span>{{ Math.floor(combo.to.duration_to/60) }}ч {{ combo.to.duration_to % 60 }}м</span>
+                                        </div>
+                                    </div>
+                                    <div class="flight-leg">
+                                        <div class="flight-header">Обратно</div>
+                                        <div class="flight-details">
+                                            <span>{{ combo.back.origin }} → {{ combo.back.destination }}</span>
+                                            <span>{{ combo.back.departure_at.substring(11,16) }} – {{ combo.back.arrival_at }}</span>
+                                            <span>{{ combo.back.airline_name }} {{ combo.back.flight_number }}</span>
+                                            <span>{{ Math.floor(combo.back.duration_back/60) }}ч {{ combo.back.duration_back % 60 }}м</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flight-price">
+                                    <div v-if="combo.priceAddition > 0" class="price-addition">+ {{ combo.priceAddition }} руб.</div>
+                                    <div v-else class="price-base">Базовый</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="!loadingFlights && !flightCombos.length" class="no-flights">
+                    <p>Рейсы не найдены</p>
+                </div>
+
             </div>
 
             <div class="modal-actions">
-                <button class="primary-btn" @click="confirmBooking">Перейти к оплате</button>
+                <p v-if="selectedFlightCombo">Итоговая цена: {{ selectedBooking.payment.amount + selectedFlightCombo.priceAddition }}</p>
+                <button class="primary-btn" @click="confirmBooking" :disabled="!selectedFlightCombo || selectedTourists.length === 0">Перейти к оплате</button>
                 <button class="btn-cancel" @click="closeBookingModal">Отмена</button>
             </div>
         </div>
@@ -479,11 +610,13 @@ export default {
 </template>
 
 <style scoped>
+
+
 .primary-btn {
     border-radius: 5px;
 }
 .btn-outline-danger {
-min-height: 45px;
+    min-height: 45px;
 }
 .tabs {
     display: flex;
@@ -578,6 +711,8 @@ min-height: 45px;
     padding: 25px;
     width: 600px;
     max-width: 95%;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .form-grid {
@@ -630,5 +765,137 @@ min-height: 45px;
     color: #666;
     margin-bottom: 6px;
     display: block;
+}
+
+/*  РЕЙСЫ  */
+.flights-wrapper {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    height: 350px;
+}
+
+.flights-title {
+    margin-bottom: 12px;
+    font-size: 15px;
+    color: #333;
+    flex-shrink: 0;
+}
+
+.flights-scroll {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px;
+    background: #fafafa;
+}
+
+.flights-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.flights-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.flights-scroll::-webkit-scrollbar-thumb {
+    background: #faab34;
+    border-radius: 10px;
+}
+
+.flights-scroll::-webkit-scrollbar-thumb:hover {
+    background: #f98e00;
+}
+
+
+.flight-combo-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
+    background: #fafafa;
+    transition: all 0.2s ease;
+}
+
+.flight-combo-card:hover {
+    background: #f0f0f0;
+    border-color: #faab34;
+}
+
+.combo-label {
+    display: flex;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.radio-wrapper {
+    display: flex;
+    align-items: flex-start;
+    padding-top: 4px;
+}
+
+.radio-wrapper input[type="radio"] {
+    cursor: pointer;
+    margin: 0;
+    width: 18px;
+    height: 18px;
+}
+
+.flight-info {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.flight-leg {
+    background: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #e8e8e8;
+}
+
+.flight-header {
+    font-weight: 600;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.flight-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+}
+
+.flight-details span {
+    line-height: 1.4;
+}
+
+.flight-price {
+    font-weight: 600;
+    color: #faab34;
+    font-size: 14px;
+    text-align: right;
+    padding-top: 8px;
+    margin-top: 8px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.no-flights {
+    grid-column: span 2;
+    text-align: center;
+    padding: 20px;
+    color: #999;
+}
+.spinner-wrapper {
+    grid-column: span 2; /* занимает обе колонки .form-grid */
+    text-align: center;
+    padding: 20px 0;
 }
 </style>

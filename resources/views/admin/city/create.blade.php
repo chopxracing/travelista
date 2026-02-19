@@ -40,6 +40,9 @@
                         <input type="text" name="name" class="form-control" placeholder="Наименование">
                     </div>
                     <div class="form-group">
+                        <input type="text" name="iata_code" class="form-control" placeholder="IATA код">
+                    </div>
+                    <div class="form-group">
                         <input type="submit" class="btn btn-primary" value="Добавить">
                     </div>
 

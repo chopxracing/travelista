@@ -393,24 +393,31 @@ export default {
                     <div class="row d-flex justify-content-center">
                         <div class="menu-content pb-70 col-lg-9">
                             <div class="title text-center">
-                                <h1 class="mb-10">Другие вопросы, с которыми мы можем вам помочь</h1>
+                                <h1 class="mb-10">Дополнительные услуги для вашего путешествия</h1>
+                                <p>Мы поможем организовать поездку так, чтобы вам осталось только наслаждаться отдыхом.</p>
                             </div>
                         </div>
                     </div>
+
                     <div class="row">
+
+                        <!-- Аренда авто -->
                         <div class="col-lg-6 col-md-6">
                             <div class="single-other-issue">
                                 <div class="thumb">
                                     <img class="img-fluid" :src="'img/o1.jpg'" alt="">
                                 </div>
                                 <a href="#">
-                                    <h4>Аренда машин</h4>
+                                    <h4>Аренда автомобилей</h4>
                                 </a>
                                 <p>
-                                    Сохранение человеческой жизни — высшая ценность, столп этики и основа.
+                                    Подберите автомобиль для комфортных поездок по городу или путешествий
+                                    за его пределы. Удобное бронирование, прозрачные условия и широкий выбор моделей.
                                 </p>
                             </div>
                         </div>
+
+                        <!-- Что посетить -->
                         <div class="col-lg-4 col-md-6">
                             <div class="single-other-issue">
                                 <div class="thumb">
@@ -420,23 +427,29 @@ export default {
                                     <h4>Что посетить</h4>
                                 </a>
                                 <p>
-                                    Следующая статья посвящена теме, которая недавно вышла на передний план — по крайней мере, так кажется.
+                                    Подскажем лучшие достопримечательности, экскурсии и интересные места.
+                                    Составьте маршрут заранее и откройте для себя город с новой стороны.
                                 </p>
                             </div>
                         </div>
+
+                        <!-- Питание -->
                         <div class="col-lg-4 col-md-6">
                             <div class="single-other-issue">
                                 <div class="thumb">
                                     <img class="img-fluid" :src="'img/o4.jpg'" alt="">
                                 </div>
                                 <a href="#">
-                                    <h4>Рекомендации по питанию</h4>
+                                    <h4>Рестораны и питание</h4>
                                 </a>
                                 <p>
-                                    Существует множество видов повествований и принципов их организации. Наука движется доказательствами.
+                                    Найдите лучшие рестораны, кафе и локальные гастрономические точки.
+                                    Мы поможем выбрать варианты на любой вкус — от уютных кофеен до изысканных ужинов.
                                 </p>
                             </div>
                         </div>
+
+                        <!-- Круизы -->
                         <div class="col-lg-3 col-md-6">
                             <div class="single-other-issue">
                                 <div class="thumb">
@@ -446,13 +459,16 @@ export default {
                                     <h4>Бронирование круизов</h4>
                                 </a>
                                 <p>
-                                    I was always somebody who felt quite sorry for myself, what I had not got compared.
+                                    Отправьтесь в морское путешествие с комфортом.
+                                    Мы подберём круиз по вашим датам, бюджету и предпочтениям.
                                 </p>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </section>
+
             <!-- Start testimonial Area -->
             <section class="testimonial-area section-gap">
                 <div class="container">
@@ -543,47 +559,29 @@ export default {
     flex-wrap: wrap;
     justify-content: center;
     gap: 20px;
-    align-items: flex-start; /* ключевое — выравниваем по верхнему краю */
+    align-items: stretch; /* растягиваем карточки по высоте, чтобы текст не накладывался */
 }
 
-.price-area .row > div:nth-child(odd) {
-    margin-bottom: 50px; /* добавляем отступ под первой карточкой */
+.price-area .single-other-issue {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* убираем фиксированные высоты */
 }
 
-/* или конкретно второму ряду */
-.price-area .row > div:nth-child(n+3) {
-    margin-top: 40px; /* сдвигаем вниз все карточки со второго ряда */
+.price-area .row > div {
+    flex: 0 1 calc(50% - 20px); /* две на планшете */
 }
 
-/* адаптив: на планшете и мобилке убираем, чтобы не было лишних отступов */
-@media (max-width: 768px) {
-    .price-area .row > div:nth-child(n+3) {
-        margin-top: 80px;
-    }
-}
-/* динамика высоты карточек */
-.price-area .row > div:nth-child(odd) .single-other-issue {
-    height: 320px;
-}
-
-.price-area .row > div:nth-child(even) .single-other-issue {
-    height: 280px;
-}
-
-/* адаптив */
-@media (max-width: 1200px) {
+@media (max-width: 780px) {
     .price-area .row > div {
-        flex: 0 1 calc(50% - 20px);
+        flex: 0 1 100%; /* одна на мобильных */
     }
 }
 
-@media (max-width: 768px) {
-    .price-area .row > div {
-        flex: 0 1 100%;
-    }
-    .price-area .row > div .single-other-issue {
-        height: auto;
-    }
+.price-area .row > div .thumb img {
+    height: auto; /* изображение будет масштабироваться под контент */
+    max-width: 100%;
+    border-radius: 12px;
 }
 
 /* ------------------ Слайдер ------------------ */

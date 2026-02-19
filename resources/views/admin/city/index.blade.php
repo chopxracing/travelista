@@ -35,6 +35,7 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Наименование</th>
+                                    <th>IATA</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -42,6 +43,7 @@
                                 <tr>
                                     <td>{{ $city->id }}</td>
                                     <td><a href="{{ route('city.show', $city->id) }}">{{ $city->name }}</a></td>
+                                    <td>{{ $city->iata_code }}</td>
                                 </tr>
                                 @endforeach
                                 </tbody>

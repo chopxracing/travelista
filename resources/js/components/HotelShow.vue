@@ -1,6 +1,10 @@
 <script>
 import axios from "axios";
 import { inject, computed } from "vue";
+
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.css";
+import { Russian } from "flatpickr/dist/l10n/ru.js";
 export default {
     name: "HotelShow",
     setup() {
@@ -16,6 +20,10 @@ export default {
             hotel: null,
             currentPhoto: 0,
             reviews: [],
+            showDatesModal: false,
+            selectedRoom: null,
+            check_in: null,
+            check_out: null,
         };
     },
 
@@ -66,17 +74,127 @@ export default {
             const scrollAmount = 100;
             container.scrollBy({left: scrollAmount * direction, behavior: 'smooth'});
         },
+        initFlatpickr(el, modelKey) {
+            if (!el || el._flatpickr) return;
+
+            flatpickr(el, {
+                locale: Russian,
+                dateFormat: "d.m.Y",
+                minDate: "today",
+                onChange: ([date]) => {
+                    if (date) {
+                        // Записываем прямо в check_in / check_out
+                        if (modelKey === 'check_in') this.check_in = date.toISOString().split('T')[0];
+                        if (modelKey === 'check_out') this.check_out = date.toISOString().split('T')[0];
+                    } else {
+                        if (modelKey === 'check_in') this.check_in = null;
+                        if (modelKey === 'check_out') this.check_out = null;
+                    }
+                },
+            });
+        },
+        initHotelFlatpickr() {
+            // Проверяем, есть ли refs
+            if (!this.$refs.tourDateFrom || !this.$refs.tourDateTo) return;
+            this.initFlatpickr(this.$refs.tourDateFrom, "date_from");
+            this.initFlatpickr(this.$refs.tourDateTo, "date_to");
+        },
+        openDatesModal(room) {
+            this.selectedRoom = room;
+            this.check_in = null;
+            this.check_out = null;
+            this.showDatesModal = true;
+
+            this.$nextTick(() => {
+                this.initFlatpickr(this.$refs.hotelDateFrom, "check_in");
+                this.initFlatpickr(this.$refs.hotelDateTo, "check_out");
+            });
+        },
+        closeDatesModal() {
+            this.showDatesModal = false;
+            this.selectedRoom = null;
+        },
+        calculateRoomPrice(room) {
+            if (!room || !this.check_in || !this.check_out) return 0;
+
+            const start = new Date(this.check_in);
+            const end = new Date(this.check_out);
+
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0;
+
+            const nights = Math.ceil(
+                (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+            );
+
+            if (nights <= 0) return 0;
+
+            const pricePerNight = Number(room.price);
+
+            if (isNaN(pricePerNight)) return 0;
+
+            return nights * pricePerNight;
+        },
+        async saveBooking() {
+            if (!this.user?.id) {
+                alert('Авторизуйтесь');
+                return;
+            }
+
+            if (!this.check_in || !this.check_out) {
+                alert('Выберите даты');
+                return;
+            }
+
+            const price = this.calculateRoomPrice(this.selectedRoom);
+
+            if (price <= 0) {
+                alert('Некорректные даты');
+                return;
+            }
+
+            try {
+                await axios.post('/api/tours/put', {
+                    user_id: this.user.id,
+                    hotel_id: this.hotel.id,
+                    tour_id: null,
+                    room_type_id: this.selectedRoom.id,
+                    amount: price,
+                    date_from: this.check_in,
+                    date_to: this.check_out
+                });
+
+                this.closeDatesModal();
+                this.$router.push('/profile?tab=cart');
+
+            } catch (e) {
+                console.error(e);
+                alert('Ошибка добавления в корзину');
+            }
+        }
     },
 
     mounted() {
         this.getHotel();
         this.getReviews();
+        // flatpickr initialization
+        this.$nextTick(() => {
+            this.initFlatpickr(this.$refs.hotelDateFrom, "check_in");
+            this.initFlatpickr(this.$refs.hotelDateTo, "check_out");
+        });
     },
     computed: {
         rating() {
             if (!this.reviews.data || !this.reviews.data.length) return null;
             const sum = this.reviews.data.reduce((acc, r) => acc + r.rating, 0);
             return (sum / this.reviews.data.length).toFixed(1);
+        }
+    },
+    watch: {
+        check_in(val) {
+            console.log('check_in:', val);
+        },
+        check_out(val) {
+            console.log('check_out:', val);
         }
     }
 };
@@ -208,7 +326,7 @@ export default {
                         <p class="room-detail"><strong>Площадь:</strong> {{ room.size_sqm }} кв.м.</p>
                         <p class="room-description" v-if="room.description">{{ room.description }}</p>
                         <div v-if="user" class="room-buttons">
-                            <a class="primary-btn">Забронировать</a>
+                            <a class="primary-btn" @click="openDatesModal(room)">Забронировать</a>
                         </div>
                         <div v-else>
                             <p>Для бронирования войдите в аккаунт</p>
@@ -260,6 +378,30 @@ export default {
             </div>
         </div>
     </section>
+
+    <div v-show="showDatesModal" class="modal-overlay">
+        <div class="modal-card">
+            <h4>Выберите даты</h4>
+            <p v-if="selectedRoom">{{ selectedRoom.name }}</p>
+            <div class="form-grid">
+                <div class="filter-group mb-3">
+                    <label>Дата заезда</label>
+                    <input ref="hotelDateFrom" type="text" class="form-control" placeholder="Дата заезда">
+                </div>
+                <div class="filter-group mb-3">
+                    <label>Дата выезда</label>
+                    <input ref="hotelDateTo" type="text" class="form-control" placeholder="Дата заезда">
+                </div>
+            </div>
+            <p v-if="selectedRoom && check_in && check_out">
+                Итог: {{ calculateRoomPrice(selectedRoom) }} руб.
+            </p>
+            <div class="modal-actions">
+                <button class="primary-btn" @click="saveBooking">Создать бронирование</button>
+                <button class="btn-cancel" @click="closeDatesModal">Отмена</button>
+            </div>
+        </div>
+    </div>
 </template>
 
 <style scoped>
@@ -676,6 +818,76 @@ export default {
 .hotel-average-rating .fa-star-half-alt {
     color: #faab34;
     margin-left: 2px;
+}
+/* Модалка дат  */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    width: 600px;
+    max-width: 95%;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.form-grid input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-cancel {
+    background: #eee;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.date-select {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.form-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+}
+.date-block {
+    grid-column: span 2;
+}
+
+.date-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 6px;
+    display: block;
 }
 </style>
 

@@ -108,6 +108,7 @@ class AdminController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'country_id' => 'required|integer',
+            'iata_code' => 'required|string|max:255',
         ]);
         City::firstOrCreate($data);
 
@@ -123,6 +124,7 @@ class AdminController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
+            'iata_code' => 'required|string|max:255',
         ]);
         $city->update($data);
         return redirect()->route('city.index');

@@ -46,7 +46,8 @@ class BookingResource extends JsonResource
             ),
             'payment' => PaymentResource::make(
                 $this->payment
-            )
+            ),
+            'city' => CityResource::make($this->whenLoaded('city')),
         ];
     }
 }

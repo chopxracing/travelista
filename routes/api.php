@@ -65,3 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getHotel', [PartnerController::class, 'getHotel']);
 });
 
+// aviasales api
+
+Route::get('/flights', [\App\Http\Controllers\FlightsApiController::class, 'index']);
+
