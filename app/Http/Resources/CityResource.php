@@ -18,6 +18,7 @@ class CityResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'iata_code' => $this->iata_code
         ];
     }
 }
