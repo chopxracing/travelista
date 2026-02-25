@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('admin.layout', function ($view) {
             $view->with('user', Auth::user());
-            $view->with('bookings', Booking::where('status_id', 1)->get());
+            $view->with('bookings', Booking::where('status_id', 6)->get());
         });
 
     }

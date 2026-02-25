@@ -32,9 +32,9 @@ class AdminController extends Controller
 
     public function index()
     {
-        $bookings = Booking::where('status_id', 1)->get();
+        $bookings = Booking::where('status_id', 6)->get();
         $users = User::all();
-        $end_bookings = Booking::where('status_id', 4)->get();
+        $end_bookings = Booking::where('status_id', 7)->get();
         $partners = User::where('role', 'partner')->get();
         return view('admin.index', compact('bookings', 'users', 'end_bookings', 'partners'));
     }

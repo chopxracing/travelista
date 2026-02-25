@@ -98,8 +98,10 @@ class PaymentController extends Controller
 
             $transaction->booking->update([
                 'is_paid' => 1,
+                'status_id' => 6,
             ]);
         });
+
 
         return response()->json(['status' => 'success']);
     }

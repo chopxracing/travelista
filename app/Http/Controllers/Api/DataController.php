@@ -278,7 +278,6 @@ class DataController extends Controller
         $booking = Booking::findOrFail($data['booking_id']);
 
         $booking->update([
-            'status_id' => 2,
             'flight_origin' => $data['flight_origin'],
             'flight_destination' => $data['flight_destination'],
             'flight_airline' => $data['flight_airline'],

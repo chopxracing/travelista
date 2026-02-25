@@ -200,12 +200,13 @@ export default {
                 });
 
                 if (this.selectedFlightCombo) {
-                    await axios.post('/api/bookings/confirmBooking', {
-                        flight_price: this.selectedFlightCombo.price,
-                        flight_origin: this.selectedFlightCombo.origin,
-                        flight_destination: this.selectedFlightCombo.destination,
-                        flight_airline: this.selectedFlightCombo.airline_name,
-                        flight_number: this.selectedFlightCombo.flight_number,
+                    await axios.post('/api/bookings/confirm', {
+                        booking_id: this.selectedBooking.id,
+                        flight_price: this.selectedFlightCombo.totalPrice,
+                        flight_origin: this.selectedFlightCombo.to.origin,
+                        flight_destination: this.selectedFlightCombo.to.destination,
+                        flight_airline: this.selectedFlightCombo.to.airline_name,
+                        flight_number: this.selectedFlightCombo.to.flight_number,
                     });
                 }
 
