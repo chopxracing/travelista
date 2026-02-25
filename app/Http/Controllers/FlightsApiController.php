@@ -21,7 +21,7 @@ class FlightsApiController extends Controller
             ], 400);
         }
 
-        $token = env('AVIASALES_API_KEY');
+        $token = config('services.aviasales.key');
 
         $url = 'https://api.travelpayouts.com/aviasales/v3/prices_for_dates';
 

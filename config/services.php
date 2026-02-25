@@ -39,6 +39,9 @@ return [
         'shop_id' => env('YOOKASSA_SHOP_ID'),
         'secret_key' => env('YOOKASSA_SECRET_KEY'),
     ],
+    'aviasales' => [
+        'key' => env('AVIASALES_API_KEY'),
+    ],
 
     'amadeus' => [
       'key' => env('AMADEUS_API_KEY', null),
