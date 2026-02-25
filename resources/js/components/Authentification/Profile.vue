@@ -207,6 +207,7 @@ export default {
                         flight_destination: this.selectedFlightCombo.to.destination,
                         flight_airline: this.selectedFlightCombo.to.airline_name,
                         flight_number: this.selectedFlightCombo.to.flight_number,
+                        tourist_ids: this.selectedTourists
                     });
                 }
 

@@ -13,6 +13,7 @@ use App\Http\Resources\HotelResource;
 use App\Http\Resources\ReviewResource;
 use App\Http\Resources\TourResource;
 use App\Models\Booking;
+use App\Models\BookingTourists;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Favorites;
@@ -273,10 +274,17 @@ class DataController extends Controller
             'flight_airline' => 'required|string|max:255',
             'flight_number' => 'required|string|max:255',
             'flight_price' => 'required|integer|min:1',
+            'tourist_ids' => 'required|array',
         ]);
 
         $booking = Booking::findOrFail($data['booking_id']);
-
+        BookingTourists::where('booking_id', $booking->id)->delete();
+        foreach ($data['tourist_ids'] as $tourist_id) {
+            BookingTourists::create([
+                'booking_id' => $booking->id,
+                'tourist_id' => $tourist_id,
+            ]);
+        }
         $booking->update([
             'flight_origin' => $data['flight_origin'],
             'flight_destination' => $data['flight_destination'],
