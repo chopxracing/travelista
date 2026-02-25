@@ -164,7 +164,7 @@ export default {
             this.selectedFlightCombo = null;
             this.flightCombos = [];
 
-            if (booking.tour) { // ← только для туров
+            if (booking.tour?.id) {
                 this.loadingFlights = true;
                 this.getFlights(booking);
             } else {
@@ -179,6 +179,16 @@ export default {
         },
         async confirmBooking() {
             if (!this.selectedBooking) return;
+
+            if (this.selectedBooking.tour?.id && !this.selectedFlightCombo) {
+                alert('Пожалуйста, выберите рейс');
+                return;
+            }
+
+            if (this.selectedTourists.length === 0) {
+                alert('Пожалуйста, выберите туристов');
+                return;
+            }
 
             const priceAddition = this.selectedFlightCombo ? this.selectedFlightCombo.priceAddition : 0;
             const totalAmount = (this.selectedBooking.payment.amount + priceAddition) * this.selectedTourists.length;
@@ -410,7 +420,7 @@ export default {
 </script>
 
 
-<template>
+    <template>
     <section class="about-banner relative">
         <div class="overlay overlay-bg"></div>
         <div class="container">
@@ -749,7 +759,7 @@ export default {
                 <button
                     class="primary-btn"
                     @click="confirmBooking"
-                    :disabled="(selectedBooking.tour && !selectedFlightCombo) || selectedTourists.length === 0"
+                    :disabled="(selectedBooking.tour?.id && !selectedFlightCombo) || selectedTourists.length === 0"
                 >
                     Перейти к оплате
                 </button>
