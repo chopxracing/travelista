@@ -199,17 +199,15 @@ export default {
                     amount: totalAmount
                 });
 
-                if (this.selectedFlightCombo) {
-                    await axios.post('/api/bookings/confirm', {
-                        booking_id: this.selectedBooking.id,
-                        flight_price: this.selectedFlightCombo.totalPrice,
-                        flight_origin: this.selectedFlightCombo.to.origin,
-                        flight_destination: this.selectedFlightCombo.to.destination,
-                        flight_airline: this.selectedFlightCombo.to.airline_name,
-                        flight_number: this.selectedFlightCombo.to.flight_number,
-                        tourist_ids: this.selectedTourists
-                    });
-                }
+                await axios.post('/api/bookings/confirm', {
+                    booking_id: this.selectedBooking.id,
+                    tourist_ids: this.selectedTourists,
+                    flight_price: this.selectedFlightCombo?.totalPrice ?? null,
+                    flight_origin: this.selectedFlightCombo?.to.origin ?? null,
+                    flight_destination: this.selectedFlightCombo?.to.destination ?? null,
+                    flight_airline: this.selectedFlightCombo?.to.airline_name ?? null,
+                    flight_number: this.selectedFlightCombo?.to.flight_number ?? null,
+                });
 
                 window.location.href = res.data.url;
             } catch (error) {

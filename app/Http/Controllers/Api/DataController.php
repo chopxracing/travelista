@@ -269,11 +269,11 @@ class DataController extends Controller
     {
         $data = $request->validate([
             'booking_id' => 'required|exists:bookings,id',
-            'flight_origin' => 'required|string|max:255',
-            'flight_destination' => 'required|string|max:255',
-            'flight_airline' => 'required|string|max:255',
-            'flight_number' => 'required|string|max:255',
-            'flight_price' => 'required|integer|min:1',
+            'flight_origin' => 'nullable|string|max:255',
+            'flight_destination' => 'nullable|string|max:255',
+            'flight_airline' => 'nullable|string|max:255',
+            'flight_number' => 'nullable|string|max:255',
+            'flight_price' => 'nullable|integer|min:1',
             'tourist_ids' => 'required|array',
         ]);
 
