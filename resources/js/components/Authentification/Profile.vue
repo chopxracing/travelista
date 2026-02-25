@@ -180,23 +180,26 @@ export default {
         async confirmBooking() {
             if (!this.selectedBooking) return;
 
-            try {
-                const totalAmount = (this.selectedBooking.payment.amount + this.selectedFlightCombo.priceAddition)
-                    * this.selectedTourists.length;
+            const priceAddition = this.selectedFlightCombo ? this.selectedFlightCombo.priceAddition : 0;
+            const totalAmount = (this.selectedBooking.payment.amount + priceAddition) * this.selectedTourists.length;
 
+            try {
                 const res = await axios.post('/api/payments/create', {
                     booking_id: this.selectedBooking.id,
                     amount: totalAmount
                 });
-                await axios.post('/api/bookings/confirmBooking', {
-                    flight_price: this.selectedFlightCombo.price,
-                    flight_origin: this.selectedFlightCombo.origin,
-                    flight_destination: this.selectedFlightCombo.destination,
-                    flight_airline: this.selectedFlightCombo.airline_name,
-                    flight_number: this.selectedFlightCombo.flight_number,
-                })
-                window.location.href = res.data.url;
 
+                if (this.selectedFlightCombo) {
+                    await axios.post('/api/bookings/confirmBooking', {
+                        flight_price: this.selectedFlightCombo.price,
+                        flight_origin: this.selectedFlightCombo.origin,
+                        flight_destination: this.selectedFlightCombo.destination,
+                        flight_airline: this.selectedFlightCombo.airline_name,
+                        flight_number: this.selectedFlightCombo.flight_number,
+                    });
+                }
+
+                window.location.href = res.data.url;
             } catch (error) {
                 console.error(error);
                 alert('Ошибка при создании платежа');
@@ -741,7 +744,7 @@ export default {
 
             <div class="modal-actions">
                 <p>Итоговая цена:
-                    {{ (selectedBooking.payment.amount + (selectedFlightCombo?.priceAddition ?? 0)) * selectedTourists.length }}
+                    {{ (selectedBooking.payment.amount + (selectedFlightCombo ? selectedFlightCombo.priceAddition : 0)) * selectedTourists.length }}
                 </p>
                 <button
                     class="primary-btn"
