@@ -28,7 +28,8 @@ class PaymentController extends Controller
     public function create(Request $request, PaymentService $service)
     {
         $request->validate([
-            'booking_id' => 'required|exists:bookings,id'
+            'booking_id' => 'required|exists:bookings,id',
+            'amount' => 'required|numeric|min:1',
         ]);
 
         $booking = Booking::where('id', $request->booking_id)
@@ -41,7 +42,7 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        $amount = $booking->payment->amount;
+        $amount = $request->amount;
 
         $transaction = Payment::create([
             'booking_id' => $booking->id,
@@ -89,14 +90,16 @@ class PaymentController extends Controller
             return response()->json(['status' => 'already processed']);
         }
 
-        $transaction->update([
-            'paid_at' => now(),
-            'yookassa_id' => $paymentObject['id'],
-        ]);
+        \DB::transaction(function () use ($transaction, $paymentObject) {
+            $transaction->update([
+                'paid_at'     => now(),
+                'yookassa_id' => $paymentObject['id'],
+            ]);
 
-        $transaction->booking->update([
-            'is_paid' => 1,
-        ]);
+            $transaction->booking->update([
+                'is_paid' => 1,
+            ]);
+        });
 
         return response()->json(['status' => 'success']);
     }

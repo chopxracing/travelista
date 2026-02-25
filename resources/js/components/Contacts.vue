@@ -87,7 +87,7 @@ export default {
                             <span class="lnr lnr-envelope"></span>
                         </div>
                         <div class="contact-details">
-                            <h5>support@travelista.ru</h5>
+                            <h5>support@zaselis.ru</h5>
                             <p>Отправьте нам сообщение в любое время</p>
                         </div>
                     </div>

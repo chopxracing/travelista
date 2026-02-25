@@ -8,12 +8,14 @@ use App\Http\Filters\TourFilter;
 use App\Http\Resources\BookingResource;
 use App\Http\Resources\CityResource;
 use App\Http\Resources\CountryResource;
+use App\Http\Resources\FavoriteResource;
 use App\Http\Resources\HotelResource;
 use App\Http\Resources\ReviewResource;
 use App\Http\Resources\TourResource;
 use App\Models\Booking;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Favorites;
 use App\Models\Hotel;
 use App\Models\Messages;
 use App\Models\Payment;
@@ -260,5 +262,78 @@ class DataController extends Controller
             'message' => 'Сообщение успешно сохранено'
         ], 200);
 
+    }
+
+    public function confirmBooking(Request $request)
+    {
+        $data = $request->validate([
+            'booking_id' => 'required|exists:bookings,id',
+            'flight_origin' => 'required|string|max:255',
+            'flight_destination' => 'required|string|max:255',
+            'flight_airline' => 'required|string|max:255',
+            'flight_number' => 'required|string|max:255',
+            'flight_price' => 'required|integer|min:1',
+        ]);
+
+        $booking = Booking::findOrFail($data['booking_id']);
+
+        $booking->update([
+            'status_id' => 2,
+            'flight_origin' => $data['flight_origin'],
+            'flight_destination' => $data['flight_destination'],
+            'flight_airline' => $data['flight_airline'],
+            'flight_number' => $data['flight_number'],
+            'flight_price' => $data['flight_price'],
+        ]);
+        return response()->json(['success' => true]);
+    }
+
+    public function storeFavorites(Request $request)
+    {
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'tour_id' => 'nullable|exists:tours,id',
+            'hotel_id' => 'nullable|exists:hotels,id',
+        ]);
+
+        Favorites::create($data);
+
+        return response()->json([
+            'success' => true
+        ]);
+    }
+    public function destroyFavorites(Request $request)
+    {
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'tour_id' => 'nullable|exists:tours,id',
+            'hotel_id' => 'nullable|exists:hotels,id',
+        ]);
+        if ($data['tour_id']) {
+            $favorite = Favorites::where('user_id', $data['user_id'])
+                ->where('tour_id', $data['tour_id']);
+            $favorite->delete();
+        } elseif ($data['hotel_id']) {
+            $favorite = Favorites::where('user_id', $data['user_id'])
+                ->where('hotel_id', $data['hotel_id']);
+            $favorite->delete();
+        }
+
+
+        return response()->json(['success' => true]);
+    }
+
+    public function getFavorites(Request $request)
+    {
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $favorites = Favorites::with(
+             ['tour', 'hotel']
+        )
+        ->where('user_id', $data['user_id'])->get();
+
+        return FavoriteResource::collection($favorites);
     }
 }

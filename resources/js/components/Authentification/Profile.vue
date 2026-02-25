@@ -1,6 +1,7 @@
 <script>
 import axios from 'axios';
 import airlinesList from "../../airlinesList.js";
+
 export default {
     name: 'UserProfile',
 
@@ -47,12 +48,19 @@ export default {
             flightCombos: [],
             selectedFlightCombo: null,
 
+            favorites: [],
         };
     },
 
     mounted() {
         this.fetchBookings();
-        console.log(this.currentUser);
+        this.$watch(
+            () => this.currentUser.user,
+            (user) => {
+                if (user) this.getFavorites();
+            },
+            {immediate: true}
+        );
     },
 
     methods: {
@@ -63,7 +71,6 @@ export default {
             try {
                 const res = await axios.get('/api/bookings');
                 this.bookings = res.data.data;
-                console.log(this.bookings)
             } catch (e) {
                 console.error(e);
                 this.error = 'Не удалось загрузить бронирования';
@@ -104,8 +111,8 @@ export default {
             this.passport_org = '';
             this.birth_date = '';
 
-            this.passportDate = { day: '', month: '', year: '' };
-            this.birthDate = { day: '', month: '', year: '' };
+            this.passportDate = {day: '', month: '', year: ''};
+            this.birthDate = {day: '', month: '', year: ''};
         },
         async saveTourist() {
             try {
@@ -155,10 +162,14 @@ export default {
             this.showBookingModal = true;
             this.selectedTourists = [];
             this.selectedFlightCombo = null;
-            this.loadingFlights = true;
             this.flightCombos = [];
-            this.getFlights(booking);
 
+            if (booking.tour) { // ← только для туров
+                this.loadingFlights = true;
+                this.getFlights(booking);
+            } else {
+                this.loadingFlights = false;
+            }
         },
         closeBookingModal() {
             this.showBookingModal = false;
@@ -170,10 +181,20 @@ export default {
             if (!this.selectedBooking) return;
 
             try {
-                const res = await axios.post('/api/payments/create', {
-                    booking_id: this.selectedBooking.id
-                });
+                const totalAmount = (this.selectedBooking.payment.amount + this.selectedFlightCombo.priceAddition)
+                    * this.selectedTourists.length;
 
+                const res = await axios.post('/api/payments/create', {
+                    booking_id: this.selectedBooking.id,
+                    amount: totalAmount
+                });
+                await axios.post('/api/bookings/confirmBooking', {
+                    flight_price: this.selectedFlightCombo.price,
+                    flight_origin: this.selectedFlightCombo.origin,
+                    flight_destination: this.selectedFlightCombo.destination,
+                    flight_airline: this.selectedFlightCombo.airline_name,
+                    flight_number: this.selectedFlightCombo.flight_number,
+                })
                 window.location.href = res.data.url;
 
             } catch (error) {
@@ -199,8 +220,21 @@ export default {
             this.loadingFlights = true;
 
             try {
-                const resTo = await axios.get('/api/flights', { params: { origin, destination, depart_at, return_at: null } });
-                const resBack = await axios.get('/api/flights', { params: { origin: destination, destination: origin, depart_at: return_at } });
+                const resTo = await axios.get('/api/flights', {
+                    params: {
+                        origin,
+                        destination,
+                        depart_at,
+                        return_at: null
+                    }
+                });
+                const resBack = await axios.get('/api/flights', {
+                    params: {
+                        origin: destination,
+                        destination: origin,
+                        depart_at: return_at
+                    }
+                });
 
                 const flightsTo = resTo.data.map(f => ({
                     ...f,
@@ -248,7 +282,48 @@ export default {
             if (!departure || !durationMinutes) return '-';
             const dep = new Date(departure);
             const arr = new Date(dep.getTime() + durationMinutes * 60 * 1000);
-            return `${arr.getHours().toString().padStart(2,'0')}:${arr.getMinutes().toString().padStart(2,'0')}`;
+            return `${arr.getHours().toString().padStart(2, '0')}:${arr.getMinutes().toString().padStart(2, '0')}`;
+        },
+        async getFavorites() {
+            if (!this.currentUser.user) return;
+
+            try {
+                const res = await axios.post('/api/favorites/get', {
+                    user_id: this.currentUser.user.id
+                });
+                this.favorites = res.data.data
+                console.log(res);
+            } catch (err) {
+                console.error(err);
+            }
+        },
+        getImage(favorite) {
+            if (favorite.hotel?.preview_image) {
+                return `/storage/${favorite.hotel.preview_image}`;
+            }
+
+            if (favorite.tour?.hotel?.preview_image) {
+                return `/storage/${favorite.tour.hotel.preview_image}`;
+            }
+
+            return '/img/no-image.png';
+        },
+
+        async removeFavorite(favorite) {
+            try {
+                await axios.delete('/api/favorites/delete', {
+                    data: {
+                        user_id: this.currentUser.user.id,
+                        hotel_id: favorite.hotel?.id || null,
+                        tour_id: favorite.tour?.id || null
+                    }
+                });
+
+                this.favorites = this.favorites.filter(f => f.id !== favorite.id);
+                this.getFavorites();
+            } catch (e) {
+                console.error(e);
+            }
         }
 
     },
@@ -259,37 +334,37 @@ export default {
 
         passportYears() {
             return Array.from(
-                { length: this.currentYear - 1899 },
+                {length: this.currentYear - 1899},
                 (_, i) => this.currentYear - i
             );
         },
 
         birthYears() {
             return Array.from(
-                { length: this.currentYear - 1899 },
+                {length: this.currentYear - 1899},
                 (_, i) => this.currentYear - i
             );
         },
 
         passportDays() {
-            const { month, year } = this.passportDate;
+            const {month, year} = this.passportDate;
             if (!month || !year) return [];
 
             // запрет будущего месяца/года
             if (this.isFutureDate(year, month)) return [];
 
             const days = new Date(year, month, 0).getDate();
-            return Array.from({ length: days }, (_, i) => i + 1);
+            return Array.from({length: days}, (_, i) => i + 1);
         },
 
         birthDays() {
-            const { month, year } = this.birthDate;
+            const {month, year} = this.birthDate;
             if (!month || !year) return [];
 
             if (this.isFutureDate(year, month)) return [];
 
             const days = new Date(year, month, 0).getDate();
-            return Array.from({ length: days }, (_, i) => i + 1);
+            return Array.from({length: days}, (_, i) => i + 1);
         },
 
     },
@@ -297,7 +372,7 @@ export default {
         passportDate: {
             deep: true,
             handler() {
-                const { day, month, year } = this.passportDate;
+                const {day, month, year} = this.passportDate;
                 if (!day || !month || !year) return;
 
                 const date = new Date(year, month - 1, day);
@@ -314,7 +389,7 @@ export default {
         birthDate: {
             deep: true,
             handler() {
-                const { day, month, year } = this.birthDate;
+                const {day, month, year} = this.birthDate;
                 if (!day || !month || !year) return;
 
                 const date = new Date(year, month - 1, day);
@@ -354,9 +429,11 @@ export default {
             <!-- Вкладки -->
             <div class="tabs mb-4">
                 <button :class="{'active-tab': activeTab==='profile'}" @click="activeTab='profile'">Профиль</button>
-                <button :class="{'active-tab': activeTab==='bookings'}" @click="activeTab='bookings'">Мои бронирования</button>
-                <button :class="{'active-tab': activeTab==='settings'}" @click="activeTab='settings'">Настройки</button>
+                <button :class="{'active-tab': activeTab==='bookings'}" @click="activeTab='bookings'">Мои бронирования
+                </button>
                 <button :class="{'active-tab': activeTab==='tourists'}" @click="activeTab='tourists'">Данные</button>
+                <button :class="{'active-tab': activeTab==='favorites'}" @click="activeTab='favorites'">Избранное
+                </button>
             </div>
 
             <!-- Контент вкладок -->
@@ -367,6 +444,55 @@ export default {
                     <p v-if="currentUser.user"><strong>Телефон:</strong> {{ currentUser.user.phone }}</p>
                     <p v-else>Загрузка данных пользователя...</p>
                     <button type="button" class="primary-btn" @click="logout">Выход</button>
+                </div>
+            </div>
+            <div v-if="activeTab === 'favorites'" class="tab-content">
+                <div class="favorites-grid">
+
+                    <div
+                        v-for="favorite in favorites"
+                        :key="favorite.id"
+                        class="favorite-card"
+                    >
+                        <router-link
+                            :to="favorite.hotel
+          ? { name: 'hotels.show', params: { id: favorite.hotel.id } }
+          : { name: 'tours.show', params: { id: favorite.tour.id } }"
+                            class="card-link"
+                        >
+                            <div class="image-wrapper">
+                                <img
+                                    :src="getImage(favorite)"
+                                    alt=""
+                                />
+
+                                <span
+                                    class="badge"
+                                    :class="{ tour: favorite.tour }"
+                                >
+            {{ favorite.hotel ? 'Отель' : 'Тур' }}
+          </span>
+
+                                <!-- КНОПКА УДАЛЕНИЯ -->
+                                <button
+                                    type="button"
+                                    class="remove-btn"
+                                    @click.prevent="removeFavorite(favorite)"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            <div class="card-body">
+                                <h3>
+                                    {{ favorite.hotel?.name || favorite.tour?.name }}
+                                </h3>
+                                <p>от {{ favorite.hotel?.min_price || favorite.tour?.price }} руб.</p>
+                            </div>
+
+                        </router-link>
+                    </div>
+
                 </div>
             </div>
 
@@ -395,8 +521,16 @@ export default {
                             <td>{{ booking.payment.amount }} руб.</td>
                             <td v-if="booking.is_paid == 0">Не оплачен</td>
                             <td v-else>Оплачен</td>
-                            <td><button type="button" @click="openBookingModal(booking)" class="primary-btn">Перейти к оформлению</button></td>
-                            <td><button type="button" @click="deleteBooking(booking.id)" class="btn btn-outline-danger">Удалить</button></td>
+                            <td>
+                                <button type="button" @click="openBookingModal(booking)" class="primary-btn">Перейти к
+                                    оформлению
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" @click="deleteBooking(booking.id)" class="btn btn-outline-danger">
+                                    Удалить
+                                </button>
+                            </td>
                         </tr>
                         <tr v-if="bookings.length===0">
                             <td colspan="4" class="text-center">Нет бронирований</td>
@@ -437,7 +571,9 @@ export default {
                             <td>{{ tourist.passport_date }}</td>
                             <td>{{ tourist.passport_org }}</td>
                             <td>{{ tourist.birth_date }}</td>
-                            <td><button class="btn btn-danger" @click="deleteTourist(tourist.id)">Удалить</button></td>
+                            <td>
+                                <button class="btn btn-danger" @click="deleteTourist(tourist.id)">Удалить</button>
+                            </td>
                         </tr>
                         <tr v-if="currentUser.user.tourists.length===0">
                             <td colspan="4" class="text-center">Здесь пока пусто</td>
@@ -447,13 +583,6 @@ export default {
                 </div>
             </div>
 
-            <div v-if="activeTab==='settings'" class="tab-content">
-                <div class="profile-card p-4 shadow-sm rounded">
-                    <h4>Настройки профиля</h4>
-                    <p>Здесь можно будет изменить email, телефон и пароль.</p>
-                    <button class="primary-btn">Редактировать профиль</button>
-                </div>
-            </div>
 
             <div v-if="loading" class="text-center py-5">
                 <div class="spinner"></div>
@@ -463,18 +592,17 @@ export default {
     </section>
 
 
-
     <div v-show="showTouristModal" class="modal-overlay">
         <div class="modal-card">
             <h4>Добавить туриста</h4>
 
             <div class="form-grid">
                 <input type="text" v-model="surname" placeholder="Фамилия">
-                <input type="text"  v-model="name" placeholder="Имя">
-                <input type="text"  v-model="last_name" placeholder="Отчество">
+                <input type="text" v-model="name" placeholder="Имя">
+                <input type="text" v-model="last_name" placeholder="Отчество">
 
-                <input type="text"  v-model="passport_series" placeholder="Серия паспорта">
-                <input type="text"  v-model="passport_number" placeholder="Номер паспорта">
+                <input type="text" v-model="passport_series" placeholder="Серия паспорта">
+                <input type="text" v-model="passport_number" placeholder="Номер паспорта">
 
                 <div class="date-block">
                     <label class="date-label">Дата выдачи паспорта</label>
@@ -487,7 +615,7 @@ export default {
                         <select v-model="passportDate.month" class="form-input">
                             <option value="">Месяц</option>
                             <option v-for="m in 12" :key="m" :value="m">
-                                {{ new Date(0, m - 1).toLocaleString('ru', { month: 'long' }) }}
+                                {{ new Date(0, m - 1).toLocaleString('ru', {month: 'long'}) }}
                             </option>
                         </select>
 
@@ -497,7 +625,7 @@ export default {
                         </select>
                     </div>
                 </div>
-                <input type="text"  v-model="passport_org" placeholder="Кем выдан">
+                <input type="text" v-model="passport_org" placeholder="Кем выдан">
 
                 <div class="date-block">
                     <label class="date-label">Дата рождения</label>
@@ -510,7 +638,7 @@ export default {
                         <select v-model="birthDate.month" class="form-input">
                             <option value="">Месяц</option>
                             <option v-for="m in 12" :key="m" :value="m">
-                                {{ new Date(0, m - 1).toLocaleString('ru', { month: 'long' }) }}
+                                {{ new Date(0, m - 1).toLocaleString('ru', {month: 'long'}) }}
                             </option>
                         </select>
 
@@ -563,30 +691,41 @@ export default {
                         <div v-for="(combo, index) in flightCombos" :key="index" class="flight-combo-card">
                             <label class="combo-label">
                                 <div class="radio-wrapper">
-                                    <input type="radio" :value="combo" v-model="selectedFlightCombo" />
+                                    <input type="radio" :value="combo" v-model="selectedFlightCombo"/>
                                 </div>
                                 <div class="flight-info">
                                     <div class="flight-leg">
                                         <div class="flight-header">Туда</div>
                                         <div class="flight-details">
                                             <span>{{ combo.to.origin }} → {{ combo.to.destination }}</span>
-                                            <span>{{ combo.to.departure_at.substring(11,16) }} – {{ combo.to.arrival_at }}</span>
+                                            <span>{{ combo.to.departure_at.substring(11, 16) }} – {{
+                                                    combo.to.arrival_at
+                                                }}</span>
                                             <span>{{ combo.to.airline_name }} {{ combo.to.flight_number }}</span>
-                                            <span>{{ Math.floor(combo.to.duration_to/60) }}ч {{ combo.to.duration_to % 60 }}м</span>
+                                            <span>{{
+                                                    Math.floor(combo.to.duration_to / 60)
+                                                }}ч {{ combo.to.duration_to % 60 }}м</span>
                                         </div>
                                     </div>
                                     <div class="flight-leg">
                                         <div class="flight-header">Обратно</div>
                                         <div class="flight-details">
                                             <span>{{ combo.back.origin }} → {{ combo.back.destination }}</span>
-                                            <span>{{ combo.back.departure_at.substring(11,16) }} – {{ combo.back.arrival_at }}</span>
+                                            <span>{{
+                                                    combo.back.departure_at.substring(11, 16)
+                                                }} – {{ combo.back.arrival_at }}</span>
                                             <span>{{ combo.back.airline_name }} {{ combo.back.flight_number }}</span>
-                                            <span>{{ Math.floor(combo.back.duration_back/60) }}ч {{ combo.back.duration_back % 60 }}м</span>
+                                            <span>{{
+                                                    Math.floor(combo.back.duration_back / 60)
+                                                }}ч {{ combo.back.duration_back % 60 }}м</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="flight-price">
-                                    <div v-if="combo.priceAddition > 0" class="price-addition">+ {{ combo.priceAddition }} руб.</div>
+                                    <div v-if="combo.priceAddition > 0" class="price-addition">+ {{
+                                            combo.priceAddition
+                                        }} руб.
+                                    </div>
                                     <div v-else class="price-base">Базовый</div>
                                 </div>
                             </label>
@@ -601,8 +740,16 @@ export default {
             </div>
 
             <div class="modal-actions">
-                <p v-if="selectedFlightCombo">Итоговая цена: {{ selectedBooking.payment.amount + selectedFlightCombo.priceAddition }}</p>
-                <button class="primary-btn" @click="confirmBooking" :disabled="!selectedFlightCombo || selectedTourists.length === 0">Перейти к оплате</button>
+                <p>Итоговая цена:
+                    {{ (selectedBooking.payment.amount + (selectedFlightCombo?.priceAddition ?? 0)) * selectedTourists.length }}
+                </p>
+                <button
+                    class="primary-btn"
+                    @click="confirmBooking"
+                    :disabled="(selectedBooking.tour && !selectedFlightCombo) || selectedTourists.length === 0"
+                >
+                    Перейти к оплате
+                </button>
                 <button class="btn-cancel" @click="closeBookingModal">Отмена</button>
             </div>
         </div>
@@ -610,19 +757,101 @@ export default {
 </template>
 
 <style scoped>
+/* favorites cards */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
 
+.favorite-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transition: 0.3s ease;
+}
 
+.favorite-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.15);
+}
+
+.card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.image-wrapper {
+    position: relative;
+    height: 180px;
+}
+
+.image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #4caf50;
+    color: white;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.badge.tour {
+    background: #2196f3;
+}
+
+.remove-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.remove-btn:hover {
+    background: #ff5252;
+}
+
+.card-body {
+    padding: 14px;
+}
+
+.card-body h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+/* main */
 .primary-btn {
     border-radius: 5px;
 }
+
 .btn-outline-danger {
     min-height: 45px;
 }
+
 .tabs {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
 }
+
 .tabs button {
     background: #fff;
     border: 1px solid #ddd;
@@ -631,11 +860,13 @@ export default {
     cursor: pointer;
     transition: all 0.2s;
 }
+
 .tabs button.active-tab {
     background: #faab34;
     color: #fff;
     border-color: #faab34;
 }
+
 .tabs button:hover:not(.active-tab) {
     background: #f8f8f8;
 }
@@ -645,14 +876,17 @@ export default {
     background: #fff;
     transition: all 0.3s ease;
 }
+
 .profile-card:hover, .table-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
+
 .profile-card h3, .profile-card h4, .table-card h4 {
     margin-bottom: 15px;
     color: #333;
 }
+
 .profile-card p {
     font-size: 14px;
     color: #555;
@@ -663,6 +897,7 @@ export default {
 .primary-btn:hover {
     background: #f98e00;
 }
+
 .primary-btn:focus {
     outline: none;
     box-shadow: none;
@@ -673,6 +908,7 @@ export default {
     width: 100%;
     border-collapse: collapse;
 }
+
 .table th, .table td {
     padding: 10px;
     text-align: left;
@@ -690,7 +926,12 @@ export default {
     animation: spin 1s linear infinite;
     margin: 0 auto;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 
 /*      МОДАЛЬНОЕ ОКНО  ТУРИСТА    */
@@ -698,7 +939,7 @@ export default {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -743,6 +984,7 @@ export default {
     border-radius: 6px;
     cursor: pointer;
 }
+
 .date-select {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -756,6 +998,7 @@ export default {
     font-size: 14px;
     background: #fff;
 }
+
 .date-block {
     grid-column: span 2;
 }
@@ -893,6 +1136,7 @@ export default {
     padding: 20px;
     color: #999;
 }
+
 .spinner-wrapper {
     grid-column: span 2; /* занимает обе колонки .form-grid */
     text-align: center;

@@ -5,6 +5,7 @@ import "flatpickr/dist/flatpickr.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
 export default {
     name: "Hotels",
+    inject: ['currentUser' , 'fetchUser'],
     data() {
         return {
             cities: [],
@@ -24,6 +25,9 @@ export default {
             check_out: null,
 
             pagination: null,
+
+            favorites: [], // ids избранных hotels
+            favoriteLoading: false,
         };
     },
     computed: {
@@ -142,11 +146,76 @@ export default {
             this.initFlatpickr(this.$refs.tourDateFrom, "date_from");
             this.initFlatpickr(this.$refs.tourDateTo, "date_to");
         },
+        async saveToFavorites(id) {
+            await axios.post('/api/saveToFavorites', {
+                hotel_id: id,
+                user_id: this.currentUser.user.id
+            })
+        },
+        async toggleFavorite(hotel) {
+            if (this.favoriteLoading) return;
+            this.favoriteLoading = true;
+
+            if (!this.currentUser.user) {
+                alert('Сначала войдите');
+                return;
+            }
+
+            try {
+                if (this.favorites.includes(hotel.id)) {
+                    await axios.delete('/api/favorites/delete', {
+                        data: {
+                            user_id: this.currentUser.user.id,
+                            hotel_id: hotel.id
+                        }
+                    });
+
+                    this.favorites = this.favorites.filter(id => id !== hotel.id);
+                } else {
+                    await axios.post('/api/favorites', {
+                        user_id: this.currentUser.user.id,
+                        hotel_id: hotel.id
+                    });
+
+                    this.favorites.push(hotel.id);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.favoriteLoading = false;
+            }
+        },
+        async getFavorites() {
+            if (!this.currentUser.user) return;
+
+            try {
+                const res = await axios.post('/api/favorites/get', {
+                    user_id: this.currentUser.user.id
+                });
+
+                // Laravel Resource -> { data: [...] }
+                const items = res.data.data ?? [];
+
+                // вытаскиваем ID туров
+                this.favorites = items
+                    .filter(item => item.hotel && item.hotel.id)
+                    .map(item => item.hotel.id);
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
     },
     mounted() {
         this.getCities();
         this.getCountries();
-
+        this.$watch(
+            () => this.currentUser.user,
+            (user) => {
+                if (user) this.getFavorites();
+            },
+            { immediate: true }
+        );
         this.getFilterList();
         // flatpickr инициализация
         this.$nextTick(() => {
@@ -289,7 +358,10 @@ export default {
                         <div class="col-lg-6 col-md-6 mb-4 d-flex" v-for="hotel in hotels" :key="hotel.id">
                             <div class="single-destinations d-flex flex-column w-100">
                                 <div class="thumb">
-                                    <img :src="`/storage/${hotel.preview_image}`" alt="">
+                                    <img
+                                        :src="hotel.preview_image ? `/storage/${hotel.preview_image}` : '/img/no-image.png'"
+                                        alt=""
+                                    >
                                 </div>
                                 <div class="details d-flex flex-column flex-grow-1">
                                     <h4 class="hotel-title d-flex justify-content-between align-items-center">
@@ -333,7 +405,18 @@ export default {
                                         <li class="d-flex justify-content-between align-items-center">
                                             <span>Цена за ночь от</span>
                                             <router-link :to="{name: 'hotels.show', params: {id: hotel.id}}" class="price-btn">{{ hotel.min_price }} руб.</router-link>
+                                            <div class="favorite-wrapper">
+                                                <button
+                                                    class="favorite-btn"
+                                                    :class="{ active: favorites.includes(hotel.id) }"
+                                                    @click="toggleFavorite(hotel)"
+                                                    :disabled="favoriteLoading"
+                                                >
+                                                    <span class="heart">❤</span>
+                                                </button>
+                                            </div>
                                         </li>
+
                                     </ul>
                                 </div>
                             </div>
@@ -371,33 +454,63 @@ export default {
     <!-- End destinations Area -->
 
 
-    <!-- Start home-about Area -->
-    <section class="home-about-area">
-        <div class="container-fluid">
-            <div class="row align-items-center justify-content-end">
-                <div class="col-lg-6 col-md-12 home-about-left">
-                    <h1>
-                        Did not find your Package? <br>
-                        Feel free to ask us. <br>
-                        We‘ll make it for you
-                    </h1>
-                    <p>
-                        inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct
-                        standards especially in the workplace. That’s why it’s crucial that, as women, our behavior on
-                        the job is beyond reproach. inappropriate behavior is often laughed.
-                    </p>
-                    <a href="#" class="primary-btn text-uppercase">request custom price</a>
-                </div>
-                <div class="col-lg-6 col-md-12 home-about-right no-padding">
-                    <img class="img-fluid" :src="'img/hotels/about-img'.jpg" alt="">
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- End home-about Area -->
+
 </template>
 
 <style scoped>
+
+/* favorites btn */
+.favorite-wrapper {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.favorite-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid #faab34;
+    background: white;
+    color: #faab34;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.15);
+}
+
+.favorite-btn .heart {
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.favorite-btn:hover {
+    background: #faab34;
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.25);
+}
+
+.favorite-btn:hover .heart {
+    transform: scale(1.2);
+}
+
+.favorite-btn.active {
+    background: #faab34;
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.35);
+}
+
+.favorite-btn.active .heart {
+    color: white;
+}
+
+.favorite-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+/* main */
 .single-destinations {
     display: flex;
     flex-direction: column;

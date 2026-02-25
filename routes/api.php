@@ -20,7 +20,10 @@ Route::get('/reviews/{hotel}', [DataController::class, 'getReviews']);
 Route::post('/tours', [DataController::class, 'getTours'])->withoutMiddleware('throttle:api');
 Route::get('/tours/{tour}', [DataController::class, 'getTour']);
 Route::post('/tours/put', [DataController::class, 'putToBasket']);
-
+Route::post('/bookings/confirm', [DataController::class, 'confirmBooking']);
+Route::post('/favorites/get', [DataController::class, 'getFavorites']);
+Route::post('/favorites', [DataController::class, 'storeFavorites']);
+Route::delete('/favorites/{tour}', [DataController::class, 'destroyFavorites']);
 // auth
 Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware('throttle:api');
 Route::post('/register', [AuthController::class, 'register'])->withoutMiddleware('throttle:api');
@@ -54,6 +57,7 @@ Route::post('/payments/create', [PaymentController::class, 'create'])
 
 Route::post('/payments/callback', [PaymentController::class, 'callback'])
     ->name('payment.callback');
+
 
 // Postman collection
 

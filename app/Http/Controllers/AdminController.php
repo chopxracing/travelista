@@ -417,26 +417,27 @@ class AdminController extends Controller
             'amenities.*' => 'integer|exists:hotel_amenities,id',
             'photos' => 'nullable|array',
         ]);
-        $hotel->update(collect($data)->except('amenities')->toArray());
 
-        //синхронизация удобств (удаляет старые, добавляет новые)
-        $hotel->amenities()->sync($data['amenities'] ?? []);
-        // Обработка изображения
+        // --- обработка изображения ---
         if ($request->hasFile('preview_image')) {
-            // Удаляем старое изображение
             if ($hotel->preview_image) {
                 Storage::disk('public')->delete($hotel->preview_image);
             }
 
-            // Сохраняем новое
-            $data['preview_image'] = $request->file('preview_image')->store('hotels', 'public');
+            $data['preview_image'] = $request->file('preview_image')
+                ->store('hotels', 'public');
         } else {
-            // Если изображение не загружали, сохраняем старое
             $data['preview_image'] = $hotel->preview_image;
         }
 
+        // --- обновление отеля ---
+        $hotel->update(collect($data)->except('amenities')->toArray());
 
-        return redirect()->route('hotel.show', ['hotel' => $hotel])
+        // синхронизация удобств
+        $hotel->amenities()->sync($data['amenities'] ?? []);
+
+        return redirect()
+            ->route('hotel.show', ['hotel' => $hotel])
             ->with('success', 'Отель успешно обновлен!');
     }
 

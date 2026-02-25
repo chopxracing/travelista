@@ -320,6 +320,40 @@ export default {
                 </div>
             </section>
             <!-- End banner Area -->
+            <section class="testimonial-area section-gap">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <swiper
+                            :modules="swiperModules"
+                            :loop="true"
+                            :autoplay="{ delay: 4000, disableOnInteraction: false }"
+                            :space-between="20"
+                            :breakpoints="{
+                            0: { slidesPerView: 1 },
+                            768: { slidesPerView: 2 },
+                            1200: { slidesPerView: 2 } /* две карточки на десктопе */
+                        }"
+                            class="modern-swiper"
+                        >
+                            <swiper-slide v-for="tour in tours" :key="tour.id">
+                                <div class="modern-card">
+                                    <div class="card-image">
+                                        <img :src="tour.photo" :alt="tour.name" />
+                                    </div>
+                                    <div class="card-body">
+                                        <h4>{{ tour.name }}</h4>
+                                        <p>{{ tour.description }}</p>
+                                        <button class="primary-btn" @click="applyTourTypeFilters(tour.type_id)">
+                                            Подробнее
+                                        </button>
+                                    </div>
+                                </div>
+                            </swiper-slide>
+                        </swiper>
+
+                    </div>
+                </div>
+            </section>
 
             <!-- Start popular-destination Area -->
             <section class="popular-destination-area section-gap">
@@ -384,9 +418,6 @@ export default {
             <!-- End popular-destination Area -->
 
 
-            <!-- Start price Area -->
-            <!-- End price Area -->
-
 
             <section class="price-area section-gap">
                 <div class="container">
@@ -407,9 +438,9 @@ export default {
                                 <div class="thumb">
                                     <img class="img-fluid" :src="'img/o1.jpg'" alt="">
                                 </div>
-                                <a href="#">
+                                <router-link :to="{name: 'contacts'}">
                                     <h4>Аренда автомобилей</h4>
-                                </a>
+                                </router-link>
                                 <p>
                                     Подберите автомобиль для комфортных поездок по городу или путешествий
                                     за его пределы. Удобное бронирование, прозрачные условия и широкий выбор моделей.
@@ -423,9 +454,9 @@ export default {
                                 <div class="thumb">
                                     <img class="img-fluid" :src="'img/o3.jpg'" alt="">
                                 </div>
-                                <a href="#">
+                                <router-link :to="{name: 'contacts'}">
                                     <h4>Что посетить</h4>
-                                </a>
+                                </router-link>
                                 <p>
                                     Подскажем лучшие достопримечательности, экскурсии и интересные места.
                                     Составьте маршрут заранее и откройте для себя город с новой стороны.
@@ -439,9 +470,9 @@ export default {
                                 <div class="thumb">
                                     <img class="img-fluid" :src="'img/o4.jpg'" alt="">
                                 </div>
-                                <a href="#">
+                                <router-link :to="{name: 'contacts'}">
                                     <h4>Рестораны и питание</h4>
-                                </a>
+                                </router-link>
                                 <p>
                                     Найдите лучшие рестораны, кафе и локальные гастрономические точки.
                                     Мы поможем выбрать варианты на любой вкус — от уютных кофеен до изысканных ужинов.
@@ -455,9 +486,9 @@ export default {
                                 <div class="thumb">
                                     <img class="img-fluid" :src="'img/o2.jpg'" alt="">
                                 </div>
-                                <a href="#">
+                                <router-link :to="{name: 'contacts'}">
                                     <h4>Бронирование круизов</h4>
-                                </a>
+                                </router-link>
                                 <p>
                                     Отправьтесь в морское путешествие с комфортом.
                                     Мы подберём круиз по вашим датам, бюджету и предпочтениям.
@@ -470,42 +501,69 @@ export default {
             </section>
 
             <!-- Start testimonial Area -->
-            <section class="testimonial-area section-gap">
+
+            <section class="why-us-area section-gap">
                 <div class="container">
                     <div class="row justify-content-center">
-                        <swiper
-                            :modules="swiperModules"
-                            :loop="true"
-                            :autoplay="{ delay: 4000, disableOnInteraction: false }"
-                            :space-between="20"
-                            :breakpoints="{
-                            0: { slidesPerView: 1 },
-                            768: { slidesPerView: 2 },
-                            1200: { slidesPerView: 2 } /* две карточки на десктопе */
-                        }"
-                            class="modern-swiper"
-                        >
-                            <swiper-slide v-for="tour in tours" :key="tour.id">
-                                <div class="modern-card">
-                                    <div class="card-image">
-                                        <img :src="tour.photo" :alt="tour.name" />
-                                    </div>
-                                    <div class="card-body">
-                                        <h4>{{ tour.name }}</h4>
-                                        <p>{{ tour.description }}</p>
-                                        <button class="primary-btn" @click="applyTourTypeFilters(tour.type_id)">
-                                            Подробнее
-                                        </button>
-                                    </div>
-                                </div>
-                            </swiper-slide>
-                        </swiper>
+                        <div class="col-lg-8 text-center">
+                            <h2 class="mb-3">Почему выбирают нас</h2>
+                            <p class="mb-5 text-muted">
+                                Мы создаём путешествия, которые остаются в памяти навсегда.
+                                Комфорт, безопасность и внимание к деталям — наш стандарт.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row text-center">
+
+                        <div class="col-md-4 mb-4">
+                            <div class="why-card">
+                                <div class="icon">✈</div>
+                                <h4>Большой выбор направлений</h4>
+                                <p>Более 50 стран и сотни проверенных отелей по всему миру.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-4">
+                            <div class="why-card">
+                                <div class="icon">💳</div>
+                                <h4>Прозрачные цены</h4>
+                                <p>Без скрытых комиссий и неожиданных доплат.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-4">
+                            <div class="why-card">
+                                <div class="icon">⭐</div>
+                                <h4>Поддержка 24/7</h4>
+                                <p>Мы всегда на связи — до, во время и после поездки.</p>
+                            </div>
+                        </div>
 
                     </div>
+
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-lg-6 text-center">
+                            <router-link
+                                v-if="currentUser.user"
+                                :to="{ name: 'tours' }"
+                                class="primary-btn text-uppercase"
+                            >
+                                Подобрать тур
+                            </router-link>
+
+                            <router-link
+                                v-else
+                                :to="{ name: 'register' }"
+                                class="primary-btn text-uppercase"
+                            >
+                                Зарегистрироваться
+                            </router-link>
+                        </div>
+                    </div>
+
                 </div>
             </section>
-
-
 
             <!-- End home-about Area -->
 
@@ -515,7 +573,40 @@ export default {
     </div>
 </template>
 
-<style scoped>/* ------------------ Общие секции ------------------ */
+<style scoped>
+
+/* ------------------ Почему выбирают нас ------------------ */
+
+.why-card {
+    background: white;
+    padding: 30px 20px;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    transition: 0.3s;
+    height: 100%;
+}
+
+.why-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+}
+
+.why-card .icon {
+    font-size: 36px;
+    margin-bottom: 15px;
+}
+
+.why-card h4 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.why-card p {
+    font-size: 14px;
+    color: #666;
+}
+
+/* ------------------ Общие секции ------------------ */
 .section-gap {
     padding-top: 50px;
     padding-bottom: 50px;
