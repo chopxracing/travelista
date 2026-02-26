@@ -221,7 +221,6 @@ export default {
                 <div class="container">
                     <div class="row fullscreen align-items-center justify-content-between">
                         <div class="col-lg-6 col-md-6 banner-left">
-                            <h6 class="text-white">Побег из серых будней</h6>
                             <h1 class="text-white">Ваше идеальное путешествие</h1>
                             <p class="text-white">Заселись — новые места, новые эмоции, новые воспоминания</p>
                             <router-link v-if="currentUser.user" :to="{ name: 'profile' }" class="primary-btn text-uppercase">Начать</router-link>

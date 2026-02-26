@@ -29,7 +29,7 @@ export default {
             pagination: null,
 
             favorites: [], // ids избранных туров
-            favoriteLoading: false,
+            favoriteLoadingIds: [],
         };
     },
     computed: {
@@ -149,48 +149,45 @@ export default {
             this.initFlatpickr(this.$refs.tourDateTo, "date_to");
         },
         async toggleFavorite(tour) {
-            if (this.favoriteLoading) return;
-            this.favoriteLoading = true;
+            if (this.favoriteLoadingIds.includes(tour.id)) return;
+            this.favoriteLoadingIds.push(tour.id);
+
+
             if (!this.currentUser.user) {
                 alert('Сначала войдите');
+                this.favoriteLoadingIds = this.favoriteLoadingIds.filter(id => id !== tour.id);
                 return;
             }
             try {
                 if (this.favorites.includes(tour.id)) {
                     await axios.delete('/api/favorites/delete', {
-                        data: {
-                            user_id: this.currentUser.user.id,
-                            tour_id: tour.id
-                        }
+                        data: { user_id: this.currentUser.user.id, tour_id: tour.id }
                     });
-
-                    this.favorites = this.favorites.filter(id => id !== tour.id);
+                    const index = this.favorites.indexOf(tour.id);
+                    if (index !== -1) {
+                        this.favorites.splice(index, 1);
+                    }
                 } else {
                     await axios.post('/api/favorites', {
-                        user_id: this.currentUser.user.id,
-                        tour_id: tour.id
+                        user_id: this.currentUser.user.id, tour_id: tour.id
                     });
-
                     this.favorites.push(tour.id);
                 }
             } catch (err) {
                 console.error(err);
             } finally {
-                this.favoriteLoading = false;
+                this.favoriteLoadingIds = this.favoriteLoadingIds.filter(id => id !== tour.id);
             }
         },
         async getFavorites() {
             if (!this.currentUser.user) return;
-
+            console.log('sending user_id:', this.currentUser.user.id);
             try {
                 const res = await axios.post('/api/favorites/get', {
                     user_id: this.currentUser.user.id
                 });
-
-                // Laravel Resource -> { data: [...] }
                 const items = res.data.data ?? [];
 
-                // вытаскиваем ID туров
                 this.favorites = items
                     .filter(item => item.tour && item.tour.id)
                     .map(item => item.tour.id);
@@ -414,16 +411,13 @@ export default {
                                             <router-link :to="{name: 'tours.show', params: {id: tour.id}}"
                                                          class="price-btn">от {{ tour.price }} руб.
                                             </router-link>
-                                            <div class="favorite-wrapper">
-                                                <button
-                                                    class="favorite-btn"
-                                                    :class="{ active: favorites.includes(tour.id) }"
-                                                    @click="toggleFavorite(tour)"
-                                                    :disabled="favoriteLoading"
-                                                >
-                                                    <span class="heart">❤</span>
-                                                </button>
-                                            </div>
+                                            <button
+                                                class="favorite-btn"
+                                                @click.prevent.stop="toggleFavorite(tour)"
+                                                :disabled="favoriteLoadingIds.includes(tour.id)"
+                                            >
+                                                <i :class="favorites.includes(tour.id) ? 'fa fa-heart' : 'fa fa-heart-o'"></i>
+                                            </button>
                                         </li>
                                     </ul>
                                 </div>
@@ -468,55 +462,33 @@ export default {
 
 <style scoped>
 /* favorites btn */
-.favorite-wrapper {
-    display: flex;
-    justify-content: flex-end;
-}
-
 .favorite-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    border: 2px solid #faab34;
-    background: white;
-    color: #faab34;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    touch-action: manipulation;
+    background: none;
+    border: none;
     cursor: pointer;
+    padding: 5px;
+    font-size: 22px;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.15);
 }
 
-.favorite-btn .heart {
-    font-size: 16px;
-    line-height: 1;
-    transition: transform 0.2s ease;
+.favorite-btn .fa-heart {
+    color: #faab34;
 }
 
-.favorite-btn:hover {
-    background: #faab34;
-    color: white;
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.25);
-}
-
-.favorite-btn:hover .heart {
-    transform: scale(1.2);
-}
-
-.favorite-btn.active {
-    background: #faab34;
-    color: white;
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.35);
-}
-
-.favorite-btn.active .heart {
-    color: white;
+.favorite-btn .fa-heart-o {
+    color: #faab34;
 }
 
 .favorite-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.favorite-btn:hover .fa-heart,
+.favorite-btn:hover .fa-heart-o {
+    transform: scale(1.2);
+    display: inline-block;
 }
 
 /* main */

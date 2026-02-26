@@ -27,7 +27,7 @@ export default {
             pagination: null,
 
             favorites: [], // ids избранных hotels
-            favoriteLoading: false,
+            favoriteLoadingIds: [],
         };
     },
     computed: {
@@ -153,50 +153,45 @@ export default {
             })
         },
         async toggleFavorite(hotel) {
-            if (this.favoriteLoading) return;
-            this.favoriteLoading = true;
+            if (this.favoriteLoadingIds.includes(hotel.id)) return;
+            this.favoriteLoadingIds.push(hotel.id);
+
 
             if (!this.currentUser.user) {
                 alert('Сначала войдите');
+                this.favoriteLoadingIds = this.favoriteLoadingIds.filter(id => id !== hotel.id);
                 return;
             }
-
             try {
                 if (this.favorites.includes(hotel.id)) {
                     await axios.delete('/api/favorites/delete', {
-                        data: {
-                            user_id: this.currentUser.user.id,
-                            hotel_id: hotel.id
-                        }
+                        data: { user_id: this.currentUser.user.id, hotel_id: hotel.id }
                     });
-
-                    this.favorites = this.favorites.filter(id => id !== hotel.id);
+                    const index = this.favorites.indexOf(hotel.id);
+                    if (index !== -1) {
+                        this.favorites.splice(index, 1);
+                    }
                 } else {
                     await axios.post('/api/favorites', {
-                        user_id: this.currentUser.user.id,
-                        hotel_id: hotel.id
+                        user_id: this.currentUser.user.id, hotel_id: hotel.id
                     });
-
                     this.favorites.push(hotel.id);
                 }
             } catch (err) {
                 console.error(err);
             } finally {
-                this.favoriteLoading = false;
+                this.favoriteLoadingIds = this.favoriteLoadingIds.filter(id => id !== hotel.id);
             }
         },
         async getFavorites() {
             if (!this.currentUser.user) return;
-
+            console.log('sending user_id:', this.currentUser.user.id);
             try {
                 const res = await axios.post('/api/favorites/get', {
                     user_id: this.currentUser.user.id
                 });
-
-                // Laravel Resource -> { data: [...] }
                 const items = res.data.data ?? [];
 
-                // вытаскиваем ID туров
                 this.favorites = items
                     .filter(item => item.hotel && item.hotel.id)
                     .map(item => item.hotel.id);
@@ -408,11 +403,10 @@ export default {
                                             <div class="favorite-wrapper">
                                                 <button
                                                     class="favorite-btn"
-                                                    :class="{ active: favorites.includes(hotel.id) }"
-                                                    @click="toggleFavorite(hotel)"
-                                                    :disabled="favoriteLoading"
+                                                    @click.prevent.stop="toggleFavorite(hotel)"
+                                                    :disabled="favoriteLoadingIds.includes(hotel.id)"
                                                 >
-                                                    <span class="heart">❤</span>
+                                                    <i :class="favorites.includes(hotel.id) ? 'fa fa-heart' : 'fa fa-heart-o'"></i>
                                                 </button>
                                             </div>
                                         </li>
@@ -460,55 +454,33 @@ export default {
 <style scoped>
 
 /* favorites btn */
-.favorite-wrapper {
-    display: flex;
-    justify-content: flex-end;
-}
-
 .favorite-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    border: 2px solid #faab34;
-    background: white;
-    color: #faab34;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    touch-action: manipulation;
+    background: none;
+    border: none;
     cursor: pointer;
+    padding: 5px;
+    font-size: 22px;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.15);
 }
 
-.favorite-btn .heart {
-    font-size: 16px;
-    line-height: 1;
-    transition: transform 0.2s ease;
+.favorite-btn .fa-heart {
+    color: #faab34;
 }
 
-.favorite-btn:hover {
-    background: #faab34;
-    color: white;
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.25);
-}
-
-.favorite-btn:hover .heart {
-    transform: scale(1.2);
-}
-
-.favorite-btn.active {
-    background: #faab34;
-    color: white;
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.35);
-}
-
-.favorite-btn.active .heart {
-    color: white;
+.favorite-btn .fa-heart-o {
+    color: #faab34;
 }
 
 .favorite-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.favorite-btn:hover .fa-heart,
+.favorite-btn:hover .fa-heart-o {
+    transform: scale(1.2);
+    display: inline-block;
 }
 /* main */
 .single-destinations {

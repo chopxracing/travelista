@@ -54,7 +54,7 @@
 .main-menu{
   padding-bottom:20px ;
   padding-top:20px ;
-  background:rgba(#fff,.15);  
+  background:rgba(#fff,.15);
   padding-left:15px;
   padding-right:15px;
 }
@@ -75,7 +75,7 @@
     display:none;
   }
   .main-menu{
-    background:transparent;    
+    background:transparent;
   }
 }
 
@@ -155,7 +155,7 @@
   text-decoration: none;
   display: inline-block;
   color: $white;
-  font-weight:500;  
+  font-weight:500;
   font-size: 12px;
   text-transform: uppercase;
   outline: none;
@@ -216,7 +216,7 @@
 
 #mobile-nav-toggle i {
   color: $white;
-  font-weight: 900;  
+  font-weight: 900;
 }
 
 @media (max-width: 991px) {

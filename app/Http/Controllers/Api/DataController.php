@@ -316,14 +316,14 @@ class DataController extends Controller
             'tour_id' => 'nullable|exists:tours,id',
             'hotel_id' => 'nullable|exists:hotels,id',
         ]);
-        if ($data['tour_id']) {
-            $favorite = Favorites::where('user_id', $data['user_id'])
-                ->where('tour_id', $data['tour_id']);
-            $favorite->delete();
-        } elseif ($data['hotel_id']) {
-            $favorite = Favorites::where('user_id', $data['user_id'])
-                ->where('hotel_id', $data['hotel_id']);
-            $favorite->delete();
+        if (!empty($data['tour_id'])) {
+            Favorites::where('user_id', $data['user_id'])
+                ->where('tour_id', $data['tour_id'])
+                ->delete();
+        } elseif (!empty($data['hotel_id'])) {
+            Favorites::where('user_id', $data['user_id'])
+                ->where('hotel_id', $data['hotel_id'])
+                ->delete();
         }
 
 

@@ -2044,7 +2044,24 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 12px;
   padding: 6px 0px;
 }
+@media (max-width: 991px) {
+    .banner-area {
+        padding-top: 80px;
+    }
+}
+@media (max-width: 991px) {
+    .main-menu {
+        background: rgba(0, 0, 0, 0.75) !important;
+    }
 
+    #header {
+        background: transparent;
+    }
+
+    #header.header-scrolled .main-menu {
+        background: transparent !important;
+    }
+}
 .header-top a {
   color: #fff;
   -webkit-transition: all 0.3s ease 0s;
