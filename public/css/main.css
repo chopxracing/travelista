@@ -2045,21 +2045,16 @@ h1, h2, h3, h4, h5, h6 {
   padding: 6px 0px;
 }
 @media (max-width: 991px) {
-    .banner-area {
-        padding-top: 80px;
-    }
-}
-@media (max-width: 991px) {
-    .main-menu {
-        background: rgba(0, 0, 0, 0.75) !important;
-    }
-
     #header {
-        background: transparent;
+        background: rgba(4, 9, 30, 0.85) !important;
     }
 
-    #header.header-scrolled .main-menu {
-        background: transparent !important;
+    .banner-area .fullscreen {
+        padding-top: 100px;
+    }
+
+    .banner-left {
+        margin-top: 20px !important;
     }
 }
 .header-top a {

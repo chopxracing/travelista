@@ -282,10 +282,3 @@ export default {
 }
 </style>
 
-<style>
-@media (max-width: 991px) {
-    #header {
-        background: rgba(0, 0, 0, 0.75) !important;
-    }
-}
-</style>
