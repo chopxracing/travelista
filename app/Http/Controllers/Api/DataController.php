@@ -246,6 +246,7 @@ class DataController extends Controller
 
     public function deleteBooking(Booking $booking)
     {
+        $booking->booking_tourists()->delete();
         $booking->payment()->delete();
         $booking->delete();
     }

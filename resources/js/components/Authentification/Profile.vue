@@ -305,7 +305,6 @@ export default {
                     user_id: this.currentUser.user.id
                 });
                 this.favorites = res.data.data
-                console.log(res);
             } catch (err) {
                 console.error(err);
             }

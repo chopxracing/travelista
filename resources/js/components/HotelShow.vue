@@ -32,7 +32,6 @@ export default {
             axios.get(`/api/hotels/${this.$route.params.id}`)
                 .then(res => {
                     this.hotel = res.data.data
-                    console.log(res);
                 })
         },
         getReviews(page = 1) {
@@ -189,14 +188,6 @@ export default {
             return (sum / this.reviews.data.length).toFixed(1);
         }
     },
-    watch: {
-        check_in(val) {
-            console.log('check_in:', val);
-        },
-        check_out(val) {
-            console.log('check_out:', val);
-        }
-    }
 };
 </script>
 

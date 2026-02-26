@@ -55,18 +55,6 @@ export default {
     },
     methods: {
         async register() {
-            console.log("Форма:", {
-                phone: this.phone,
-                email: this.email,
-                name: this.name,
-                surname: this.surname,
-                last_name: this.last_name,
-                address: this.address,
-                city_id: this.city_id,
-                country_id: this.country_id,
-                password: this.password,
-                gender: this.gender,
-            });
             this.error = null;
 
             try {

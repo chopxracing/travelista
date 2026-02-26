@@ -185,7 +185,6 @@ export default {
         },
         async getFavorites() {
             if (!this.currentUser.user) return;
-            console.log('sending user_id:', this.currentUser.user.id);
             try {
                 const res = await axios.post('/api/favorites/get', {
                     user_id: this.currentUser.user.id

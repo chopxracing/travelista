@@ -79,7 +79,6 @@ export default {
                 });
                 this.tours = res.data.data;
                 this.pagination = res.data.meta;
-                console.log(res);
             } catch (err) {
                 console.error(err);
             }
@@ -181,7 +180,6 @@ export default {
         },
         async getFavorites() {
             if (!this.currentUser.user) return;
-            console.log('sending user_id:', this.currentUser.user.id);
             try {
                 const res = await axios.post('/api/favorites/get', {
                     user_id: this.currentUser.user.id
