@@ -7,6 +7,7 @@
     @vite(['resources/js/app.js'])
 
 </head>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.6.0/css/all.css">
 <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
 <!--
 CSS

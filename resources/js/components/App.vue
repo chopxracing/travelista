@@ -100,10 +100,9 @@ export default {
                     </div>
                     <div class="col-lg-6 col-sm-6 col-6 header-top-right">
                         <div class="header-social">
-                            <a href="#"><i class="fa fa-facebook"></i></a>
-                            <a href="#"><i class="fa fa-twitter"></i></a>
-                            <a href="#"><i class="fa fa-dribbble"></i></a>
-                            <a href="#"><i class="fa fa-behance"></i></a>
+                            <a href="#"><i class="fa fa-telegram"></i></a>
+                            <a href="#"><i class="fa fa-whatsapp"></i></a>
+                            <a href="#"><i class="fa fa-youtube"></i></a>
                         </div>
                     </div>
                 </div>
@@ -117,11 +116,10 @@ export default {
                 <nav id="nav-menu-container">
                     <ul class="nav-menu">
                         <li> <router-link to="/">Главная</router-link></li>
-                        <li> <router-link to="/about">О нас</router-link> </li>
-                        <li><router-link :to="{ name: 'tours'}">Туры</router-link></li>
-                        <li><router-link to="/hotels">Отели</router-link></li>
+                        <li> <router-link :to="{name: 'about'}">О нас</router-link> </li>
+                        <li><router-link :to="{name: 'tours'}">Туры</router-link></li>
+                        <li><router-link :to="{name: 'hotels'}">Отели</router-link></li>
                         <li><router-link :to="{name: 'insurance'}">Страхование</router-link></li>
-                        <li><router-link :to="{name: 'blog'}">Наш Блог</router-link></li>
                         <li><router-link :to="{name: 'contacts'}">Контакты</router-link></li>
                     </ul>
                 </nav><!-- #nav-menu-container -->
@@ -231,10 +229,9 @@ export default {
 
             <div class="row footer-bottom d-flex justify-content-between align-items-center mt-4">
                 <div class="col-lg-4 col-sm-12 footer-social">
-                    <a href="#"><i class="fa fa-facebook"></i></a>
-                    <a href="#"><i class="fa fa-twitter"></i></a>
-                    <a href="#"><i class="fa fa-dribbble"></i></a>
-                    <a href="#"><i class="fa fa-behance"></i></a>
+                    <a href="#"><i class="fa fa-telegram"></i></a>
+                    <a href="#"><i class="fa fa-whatsapp"></i></a>
+                    <a href="#"><i class="fa fa-youtube"></i></a>
                 </div>
                 <div class="col-lg-8 col-sm-12 text-right">
                     <p>© 2026 Все права защищены. Заселись</p>

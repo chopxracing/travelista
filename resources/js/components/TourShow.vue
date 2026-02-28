@@ -28,15 +28,16 @@ export default {
                     this.tour = res.data.data
                     // после получения тура — грузим отель
                     this.hotel = this.tour.hotel
+                    this.getReviews();
                 })
         },
         getReviews(page = 1) {
             axios
-                .get(`/api/reviews/${this.$route.params.id}?page=${page}`)
+                .get(`/api/reviews/${this.tour.hotel.id}?page=${page}`)
                 .then((res) => {
-                    // предполагаем, что API возвращает Laravel пагинацию: data + meta
                     this.reviews.data = res.data.data;
                     this.reviews.meta = res.data.meta || {};
+
                 });
         },
         nextPhoto() {
@@ -104,7 +105,6 @@ export default {
     },
 
     mounted() {
-        this.getReviews();
         this.getTour()
     },
     computed: {

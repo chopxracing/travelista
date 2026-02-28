@@ -16,14 +16,15 @@ Route::post('/hotels', [DataController::class, 'getHotels'])->withoutMiddleware(
 Route::get('/hotels/filters', [DataController::class, 'filterHotels'])->withoutMiddleware('throttle:api');
 Route::get('/hotels/{hotel}', [DataController::class, 'getHotel']);
 Route::get('/reviews/{hotel}', [DataController::class, 'getReviews']);
+Route::post('/reviews/store', [DataController::class, 'storeReview']);
 
 Route::post('/tours', [DataController::class, 'getTours'])->withoutMiddleware('throttle:api');
 Route::get('/tours/{tour}', [DataController::class, 'getTour']);
-Route::post('/tours/put', [DataController::class, 'putToBasket']);
-Route::post('/bookings/confirm', [DataController::class, 'confirmBooking']);
+Route::middleware('auth:sanctum')->post('/tours/put', [DataController::class, 'putToBasket']);
+Route::middleware('auth:sanctum')->post('/bookings/confirm', [DataController::class, 'confirmBooking']);
 Route::post('/favorites/get', [DataController::class, 'getFavorites']);
-Route::post('/favorites', [DataController::class, 'storeFavorites']);
-Route::delete('/favorites/{tour}', [DataController::class, 'destroyFavorites']);
+Route::middleware('auth:sanctum')->post('/favorites', [DataController::class, 'storeFavorites']);
+Route::middleware('auth:sanctum')->delete('/favorites/{tour}', [DataController::class, 'destroyFavorites']);
 // auth
 Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware('throttle:api');
 Route::post('/register', [AuthController::class, 'register'])->withoutMiddleware('throttle:api');
@@ -52,10 +53,10 @@ Route::middleware('auth:sanctum')->post('/contacts', [DataController::class, 'sa
 
 
 //платежка
-Route::post('/payments/create', [PaymentController::class, 'create'])
+Route::middleware('auth:sanctum')->post('/payments/create', [PaymentController::class, 'create'])
     ->middleware('auth:sanctum');
 
-Route::post('/payments/callback', [PaymentController::class, 'callback'])
+Route::middleware('auth:sanctum')->post('/payments/callback', [PaymentController::class, 'callback'])
     ->name('payment.callback');
 
 

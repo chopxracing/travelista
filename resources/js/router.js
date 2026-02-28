@@ -10,7 +10,6 @@ import Tours from "./components/Tours.vue";
 import TourShow from "./components/TourShow.vue";
 import Insurance from "./components/Insurance.vue";
 import Contacts from "./components/Contacts.vue";
-import Blog from "./components/Blog.vue";
 
 const routes = [
     {
@@ -70,11 +69,6 @@ const routes = [
         path: '/contacts',
         name: 'contacts',
         component: Contacts
-    },
-    {
-        path: '/blog',
-        name: 'blog',
-        component: Blog
     }
 ];
 

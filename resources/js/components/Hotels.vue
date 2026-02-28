@@ -365,7 +365,7 @@ export default {
                                             <span v-for="n in 5 - hotel.stars" :key="'empty-'+n" class="fa fa-star"></span>
                                         </div>
                                     </h4>
-                                    <p v-if="hotel.avg_rating">{{ hotel.avg_rating }} / <span>{{ hotel.reviews_count }} отзывов</span></p>
+                                    <p v-if="hotel.avg_rating">{{ hotel.avg_rating }} <span class="fa fa-star checked"></span> / <span>{{ hotel.reviews_count }} отзывов</span></p>
 
                                     <p v-else class="no-rating">
                                         Нет отзывов

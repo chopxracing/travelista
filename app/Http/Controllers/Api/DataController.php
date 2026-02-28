@@ -121,6 +121,22 @@ class DataController extends Controller
             ->paginate(6);
         return ReviewResource::collection($reviews);
     }
+    public function storeReview(Request $request)
+    {
+        $data = $request->validate([
+            'rating' => 'required|integer|between:1,5',
+            'comment' => 'required|string',
+            'hotel_id' => 'nullable|integer|exists:hotels,id',
+            'booking_id' => 'nullable|integer|exists:bookings,id',
+            'tour_id' => 'nullable|integer|exists:tours,id',
+            'user_id' => 'required|integer|exists:users,id',
+            'title' => 'required|string',
+        ]);
+        Review::create($data);
+        return response()->json([
+            'message' => 'Review created'
+        ]);
+    }
 
     public function getTours(Request $request)
     {
@@ -141,7 +157,10 @@ class DataController extends Controller
         ]);
 
         $tours = Tour::with([
-            'hotel',
+            'hotel' => function ($query) {
+                $query->withAvg('reviews', 'rating')
+                    ->withCount('reviews');
+            },
             'hotel.photos',
             'tour_type',
             'tour_operator',

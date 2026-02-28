@@ -374,6 +374,7 @@ export default {
                                             ></span>
                                         </div>
                                     </h4>
+                                    <p v-if="tour.hotel.avg_rating">{{ tour.hotel.avg_rating }} <span class="fa fa-star checked"></span> / <span>{{ tour.hotel.reviews_count }} отзывов</span></p>
                                     <p>{{ tour.description }}</p>
                                     <ul class="package-list mt-auto">
                                         <li class="d-flex justify-content-between align-items-center">
