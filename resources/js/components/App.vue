@@ -1,6 +1,7 @@
 <script>
 import axios from "axios";
-import { reactive, provide } from 'vue';
+import { reactive } from 'vue';
+
 export default {
     name: "App",
     data() {
@@ -23,11 +24,10 @@ export default {
             return this.$route.meta.layout !== false;
         },
         user() {
-            return this.userState.user; // теперь доступно как `user` в шаблоне
+            return this.userState.user;
         }
     },
     created() {
-        // Глобальный спиннер при переходах
         this.$router.beforeEach((to, from, next) => {
             this.isPageLoading = true;
             next();
@@ -36,39 +36,63 @@ export default {
         this.$router.afterEach(() => {
             setTimeout(() => {
                 this.isPageLoading = false;
-            }, 300); // плавность
+                this.initMobileNav(); // 👈 переинициализация меню
+            }, 300);
+
+            // Сброс состояния меню
+            document.body.classList.remove('mobile-nav-active');
+            const overlay = document.getElementById('mobile-body-overly');
+            if (overlay) overlay.style.display = 'none';
         });
     },
     methods: {
+        initMobileNav() {
+            // Сначала удаляем старые элементы
+            $('#mobile-nav').remove();
+            $('#mobile-nav-toggle').remove();
+            $('#mobile-body-overly').remove();
+
+            // Даём Vue время завершить рендер DOM
+            setTimeout(() => {
+                if ($('#nav-menu-container').length) {
+                    var $mobile_nav = $('#nav-menu-container').clone().prop({ id: 'mobile-nav' });
+                    $mobile_nav.find('> ul').attr({ 'class': '', 'id': '' });
+                    $('body .main-menu').append($mobile_nav);
+                    $('body .main-menu').prepend('<button type="button" id="mobile-nav-toggle"><i class="lnr lnr-menu"></i></button>');
+                    $('body .main-menu').append('<div id="mobile-body-overly"></div>');
+                    $('#mobile-nav').find('.menu-has-children').prepend('<i class="lnr lnr-chevron-down"></i>');
+                } else if ($("#mobile-nav, #mobile-nav-toggle").length) {
+                    $("#mobile-nav, #mobile-nav-toggle").hide();
+                }
+            }, 50);
+        },
+
         async fetchUser() {
             try {
                 const res = await axios.get('/api/user');
-                this.userState.user = res.data.data;// реактивно обновляется
+                this.userState.user = res.data.data;
             } catch {
                 this.userState.user = null;
             }
         },
+
         async logout() {
             try {
                 await axios.post('/api/logout');
             } catch (err) {
                 console.error(err);
             }
-            this.user = null;
+            this.userState.user = null;
             localStorage.removeItem('api_token');
             delete axios.defaults.headers.common['Authorization'];
             this.$router.push('/login');
         },
-
     },
     mounted() {
-        // Берем токен и сразу ставим его в axios
         const token = localStorage.getItem('api_token');
         if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         }
-
-        // Теперь можем безопасно получить пользователя
         this.fetchUser();
     }
 };
@@ -111,7 +135,7 @@ export default {
         <div class="container main-menu">
             <div class="row align-items-center justify-content-between d-flex">
                 <div id="logo">
-                    <router-link to="/"><img :src="'/img/logo.png'" alt="" title="" /></router-link>
+                    <router-link to="/"><img :src="'/img/logo.png'" alt="" title="" class="logo_c"/></router-link>
                 </div>
                 <nav id="nav-menu-container">
                     <ul class="nav-menu">

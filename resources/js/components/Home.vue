@@ -517,7 +517,7 @@ export default {
 
                         <div class="col-md-4 mb-4">
                             <div class="why-card">
-                                <div class="icon">✈</div>
+                                <div class="icon"><i class="fas fa-plane"></i></div>
                                 <h4>Большой выбор направлений</h4>
                                 <p>Более 50 стран и сотни проверенных отелей по всему миру.</p>
                             </div>
@@ -525,7 +525,7 @@ export default {
 
                         <div class="col-md-4 mb-4">
                             <div class="why-card">
-                                <div class="icon">💳</div>
+                                <div class="icon"><i class="fas fa-money-check"></i></div>
                                 <h4>Прозрачные цены</h4>
                                 <p>Без скрытых комиссий и неожиданных доплат.</p>
                             </div>
@@ -533,7 +533,7 @@ export default {
 
                         <div class="col-md-4 mb-4">
                             <div class="why-card">
-                                <div class="icon">⭐</div>
+                                <div class="icon"><i class="fas fa-headset"></i></div>
                                 <h4>Поддержка 24/7</h4>
                                 <p>Мы всегда на связи — до, во время и после поездки.</p>
                             </div>
@@ -602,7 +602,10 @@ export default {
 
 .why-card p {
     font-size: 14px;
-    color: #666;
+    color: #777777;
+}
+.icon {
+    color: #faab34;
 }
 
 /* ------------------ Общие секции ------------------ */

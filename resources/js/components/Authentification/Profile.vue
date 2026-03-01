@@ -979,8 +979,7 @@ export default {
     align-items: center;
     gap: 16px;
     padding: 24px;
-    background: linear-gradient(135deg, #faab34 0%, #ffd880 100%);
-    border-bottom: 2px solid #faab34;
+    background: linear-gradient(135deg, #faab34, #fff );
 }
 
 .info-card__avatar {
