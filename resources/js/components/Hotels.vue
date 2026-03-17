@@ -349,7 +349,7 @@ export default {
                 <!-- Основной контент справа -->
                 <div class="col-lg-8">
                     <div class="row">
-                        <div class="col-lg-6 col-md-6 mb-4 d-flex" v-for="hotel in hotels" :key="hotel.id">
+                        <router-link :to="{name: 'hotels.show', params: {id: hotel.id}}" class="col-lg-6 col-md-6 mb-4 d-flex" v-for="hotel in hotels" :key="hotel.id">
                             <div class="single-destinations d-flex flex-column w-100">
                                 <div class="thumb">
                                     <img
@@ -413,7 +413,7 @@ export default {
                                     </ul>
                                 </div>
                             </div>
-                        </div>
+                        </router-link>
 
                         <!-- /карточки -->
                     </div>
@@ -749,5 +749,14 @@ export default {
         margin-bottom: 10px;
         font-size: 14px;
     }
+}
+
+a, a:hover, a:visited, a:focus, a:active {
+    text-decoration: none;
+    color: inherit;
+}
+
+.router-link-active, .router-link-exact-active {
+    color: inherit;
 }
 </style>

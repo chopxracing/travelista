@@ -143,6 +143,12 @@ Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
         Route::get('/{tourist}', [AdminController::class, 'tourist_show'])->name('tourist.show');
         Route::delete('/{tourist}', [AdminController::class, 'tourist_delete'])->name('tourist.delete');
     });
+    // Роуты админ - обращения
+    Route::group(['prefix' => 'message'], function () {
+        Route::get('/', [AdminController::class, 'message_index'])->name('message.index');
+        Route::get('/{message}', [AdminController::class, 'message_show'])->name('message.show');
+        Route::delete('/{message}', [AdminController::class, 'message_delete'])->name('message.delete');
+    });
 
 
 

@@ -573,7 +573,9 @@ export default {
 </template>
 
 <style scoped>
-
+.primary-btn {
+    border-radius: 8px;
+}
 /* ------------------ Почему выбирают нас ------------------ */
 
 .why-card {

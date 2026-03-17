@@ -159,6 +159,16 @@
                             </a>
                         </li>
                     @endif
+                    @if($user->role == 'admin')
+                        <li class="nav-item">
+                            <a href="{{ route('message.index') }}" class="nav-link">
+                                <i class="nav-icon fas fa-envelope"></i>
+                                <p>
+                                    Обращения
+                                </p>
+                            </a>
+                        </li>
+                    @endif
                     <li class="nav-item menu-close">
                         <a href="#" class="nav-link active">
                             <i class="nav-icon fas fa-asdfasd-h"></i>
@@ -197,7 +207,7 @@
                     @if($user->role == 'admin')
                         <li class="nav-item">
                             <a href="{{ route('tour.index') }}" class="nav-link">
-                                <i class="nav-icon fas fa-hotel"></i>
+                                <i class="nav-icon fas fa-globe"></i>
                                 <p>
                                     Туры
                                 </p>
@@ -234,13 +244,7 @@
         @yield('content')
     </div>
     <!-- /.content-wrapper -->
-    <footer class="main-footer">
-        <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong>
-        All rights reserved.
-        <div class="float-right d-none d-sm-inline-block">
-            <b>Version</b> 3.2.0
-        </div>
-    </footer>
+
 
     <!-- Control Sidebar -->
     <aside class="control-sidebar control-sidebar-dark">

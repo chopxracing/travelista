@@ -11,6 +11,7 @@ use App\Models\CountryCity;
 use App\Models\Hotel;
 use App\Models\HotelAmenity;
 use App\Models\HotelAmenityArray;
+use App\Models\Messages;
 use App\Models\Room;
 use App\Models\RoomAmenity;
 use App\Models\RoomAmenityArray;
@@ -927,5 +928,31 @@ class AdminController extends Controller
     {
         Tourist::destroy($id);
         return redirect()->route('tourist.index');
+    }
+
+    public function message_index(Request $request)
+    {
+        $search = $request->get('search');
+        $query = Messages::query(); // Builder
+
+        if ($search) {
+            $query->where('email', 'like', '%' . $search . '%')
+                ->orWhere('theme', 'like', '%' . $search . '%');
+        }
+
+        $messages = $query->orderBy('id', 'desc')->paginate(10);
+
+        return view('admin.messages.index', compact('messages'));
+    }
+
+    public function message_show(Messages $message)
+    {
+        return view('admin.messages.show', compact('message'));
+    }
+
+    public function message_delete(Messages $message)
+    {
+        $message->delete();
+        return redirect()->route('messages.index');
     }
 }

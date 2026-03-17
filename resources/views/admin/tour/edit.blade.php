@@ -6,7 +6,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Редактировать отель</h1>
+                    <h1 class="m-0">Редактировать тур</h1>
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -23,7 +23,7 @@
         <div class="container-fluid">
             <!-- Small boxes (Stat box) -->
             <div class="row">
-                <form action="{{ route('hotel.update', $hotel->id) }}" method="post" enctype="multipart/form-data">
+                <form action="{{ route('tour.update', $tour->id) }}" method="post" enctype="multipart/form-data">
                     @csrf
                     @method('patch')
                     @if ($errors->any())
@@ -37,7 +37,7 @@
                     @endif
                     <div class="form-group">
                         <select name="tour_operator_id" class="form-control select2" style="width: 100%;" required>
-                            <option value="{{ $tour->tour_operator_id }}" selected="selected">{{ $tour->tour_operator_id->name }}</option>
+                            <option value="{{ $tour->tour_operator_id }}" selected="selected">{{ $tour->tour_operator->name }}</option>
                             @foreach($tour_operators as $tour_operator)
                                 @if($tour->tour_operator->id != $tour_operator->id)
                                     <option value="{{ $tour_operator->id }}"
@@ -58,7 +58,7 @@
                     </div>
                     <div class="form-group">
                         <select name="tour_type_id" class="form-control select2" style="width: 100%;" required>
-                            <option value="{{ $tour->tour_type_id }}" selected="selected">{{ $tour->tour_type_id->name }}</option>
+                            <option value="{{ $tour->tour_type_id }}" selected="selected">{{ $tour->tour_type->name }}</option>
                             @foreach($tour_types as $tour_type)
                                 @if($tour->tour_type->id != $tour_type->id)
                                     <option value="{{ $tour_type->id }}"
@@ -79,13 +79,13 @@
                                class="form-control mb-1" placeholder="Количество дней (продолжительность)">
                     </div>
                     <div class="form-group">
-                        <select name="hotel_id" class="form-control select2" style="width: 100%;" required>
-                            <option value="{{ $tour->hotel->id }}" selected="selected">{{ $tour->hotel->name }}</option>
-                            @foreach($hotels as $hotel)
-                                @if($tour->hotel->id != $hotel->id)
-                                    <option value="{{ $hotel->id }}"
-                                        {{ old('hotel_id') == $hotel->id ? 'selected' : '' }}>
-                                        {{ $hotel->name }}
+                        <select name="tour_id" class="form-control select2" style="width: 100%;" required>
+                            <option value="{{ $tour->tour_type->id }}" selected="selected">{{ $tour->tour_type->name }}</option>
+                            @foreach($tour_types as $tour_type)
+                                @if($tour->tour_type->id != $tour_type->id)
+                                    <option value="{{ $tour_type->id }}"
+                                        {{ old('tour_type_id') == $tour_type->id ? 'selected' : '' }}>
+                                        {{ $tour_type->name }}
                                     </option>
                                 @endif
                             @endforeach

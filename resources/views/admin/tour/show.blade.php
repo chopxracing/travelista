@@ -81,7 +81,7 @@
                                 </tr>
                                 <tr>
                                     <td>Отель</td>
-                                    <td>{{ $tour->hotel }}</td>
+                                    <td>{{ $tour->hotel->name }}</td>
                                 </tr>
                                 <tr>
                                     <td>Даты</td>

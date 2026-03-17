@@ -94,6 +94,18 @@
                                     <td>{{ $booking_tourist_count }}</td>
                                 </tr>
                                 <tr>
+                                    <td>Рейс</td>
+                                    <td>{{ $booking->flight_number }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Стоимость рейса(-ов)</td>
+                                    <td>{{ $booking->flight_price }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Перевозчик</td>
+                                    <td>{{ $booking->flight_airline }}</td>
+                                </tr>
+                                <tr>
                                     <td>Информация о туристах</td>
                                     <td><a href="{{ route('booking_tourist.index', $booking->id) }}" class="btn btn-primary">Перейти</a></td>
                                 </tr>

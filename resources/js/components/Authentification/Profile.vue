@@ -937,7 +937,7 @@ export default {
     padding: 12px 8px;
     background: #fff;
     border: 2px solid transparent;
-    border-radius: var(--radius);
+    border-radius: 14px;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -969,7 +969,7 @@ export default {
 /* ── ПРОФИЛЬ ── */
 .info-card {
     background: #fff;
-    border-radius: var(--radius);
+    border-radius: 14px;
     overflow: hidden;
     box-shadow: var(--shadow-md);
 }
@@ -1072,9 +1072,9 @@ export default {
 
 .booking-item {
     background: #fff;
-    border-radius: var(--radius);
+    border-radius: 14px;
     padding: 16px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     border: 1px solid #e5e7eb;
     transition: box-shadow 0.2s;
 }
@@ -1294,9 +1294,9 @@ export default {
 .tourist-item {
     background: #fff;
     border: 1px solid #e5e7eb;
-    border-radius: var(--radius);
+    border-radius: 14px;
     padding: 16px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .tourist-item__name {
@@ -1330,9 +1330,9 @@ export default {
 
 .fav-card {
     background: #fff;
-    border-radius: var(--radius);
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     border: 1px solid #e5e7eb;
     transition: all 0.25s;
     position: relative;
@@ -1340,7 +1340,7 @@ export default {
 
 .fav-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.14);
 }
 
 .fav-card__link {
@@ -1547,9 +1547,9 @@ export default {
     width: 100%;
     border-collapse: collapse;
     background: #fff;
-    border-radius: var(--radius);
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .nice-table th {
