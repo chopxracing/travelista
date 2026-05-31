@@ -26,23 +26,18 @@ export default {
                 this.$router.push('/');
 
             } catch (err) {
-                // Разбор ошибок от сервера
                 if (err.response) {
                     const status = err.response.status;
                     const message = err.response.data?.message;
 
                     if (status === 403) {
-                        // Email не подтверждён
                         this.error = message || 'Email не подтверждён. Проверьте почту.';
                     } else if (status === 401) {
-                        // Неверные данные
                         this.error = message || 'Неверный телефон или пароль';
                     } else {
-                        // Другая ошибка сервера
                         this.error = message || 'Произошла ошибка при входе';
                     }
                 } else {
-                    // Сервер недоступен или сеть
                     this.error = 'Сервер недоступен';
                 }
 
@@ -75,7 +70,7 @@ export default {
                     <h6 class="text-white">В дали от монотонной жизни</h6>
                     <h1 class="text-white">Магическое путешествие</h1>
                     <p class="text-white">
-                        Забронируйте путешествие мечты вместе с Travelista
+                        Забронируйте путешествие мечты вместе с Заселись
                     </p>
                     <div v-if="error" class="error-box">
                         {{ error }}

@@ -164,7 +164,7 @@
                                     </span>
                                 </div>
                                 <div class="float-right">
-                                    {{ $hotels->appends(['search' => request('search')])->links() }}
+                                    {{ $hotels->appends(['search' => request('search')])->links('pagination.bootstrap-4') }}
                                 </div>
                             </div>
                         @endif

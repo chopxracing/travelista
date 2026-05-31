@@ -56,7 +56,6 @@ export default {
     methods: {
         async register() {
             this.error = null;
-
             try {
                 const response = await axios.post(
                     '/api/register',
@@ -77,7 +76,6 @@ export default {
                 const token = response.data.token;
                 localStorage.setItem('api_token', token); // Сохраняем токен
 
-                // Настраиваем axios для будущих запросов
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                 alert(response.data.message);
                 this.$router.push('/login');
@@ -141,7 +139,7 @@ export default {
                     <h6 class="text-white">В дали от монотонной жизни</h6>
                     <h1 class="text-white">Магическое путешествие</h1>
                     <p class="text-white">
-                        Забронируйте путешествие мечты вместе с Travelista
+                        Забронируйте путешествие мечты вместе с Заселись
                     </p>
                 </div>
 

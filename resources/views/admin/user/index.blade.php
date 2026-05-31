@@ -136,7 +136,7 @@
                                     </span>
                                 </div>
                                 <div class="float-right">
-                                    {{ $users->appends(['search' => request('search')])->links() }}
+                                    {{ $users->appends(['search' => request('search')])->links('pagination.bootstrap-4') }}
                                 </div>
                             </div>
                         @endif
