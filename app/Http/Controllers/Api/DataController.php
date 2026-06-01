@@ -59,7 +59,18 @@ class DataController extends Controller
 
     }
     public function getHotel(Hotel $hotel) {
-        return new HotelResource($hotel);
+        // Eager load всех связанных данных чтобы избежать N+1 проблем
+        return new HotelResource(
+            $hotel->load(
+                'country',
+                'city',
+                'amenities',
+                'room_type.photos',
+                'photos'
+            )
+            ->loadAvg('reviews', 'rating')
+            ->loadCount('reviews')
+        );
     }
     public function filterHotels(Request $request)
     {

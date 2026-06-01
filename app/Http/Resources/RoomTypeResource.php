@@ -24,7 +24,8 @@ class RoomTypeResource extends JsonResource
             'capacity' => $this->capacity,
             'size_sqm' => $this->size_sqm,
             'preview_image' => $this->preview_image,
-            'photos' => HotelImageResource::collection($this->photos)
+            // Грузим только первую фотографию номера чтобы избежать лишних данных
+            'photos' => HotelImageResource::collection($this->photos->take(1))
         ];
     }
 }

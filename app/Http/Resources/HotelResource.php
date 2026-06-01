@@ -6,6 +6,11 @@ use App\Models\City;
 use App\Models\Hotel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\CountryResource;
+use App\Http\Resources\CityResource;
+use App\Http\Resources\AmenityResource;
+use App\Http\Resources\RoomTypeResource;
+use App\Http\Resources\HotelImageResource;
 
 class HotelResource extends JsonResource
 {
@@ -21,7 +26,7 @@ class HotelResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'stars' => $this->stars,
-            'country' => new CityResource($this->country),
+            'country' => new CountryResource($this->country),
             'city' => new CityResource($this->city),
             'meters_to_sea' => $this->meters_to_sea,
             'meters_to_center' => $this->meters_to_center,
@@ -35,8 +40,8 @@ class HotelResource extends JsonResource
             'phone' => $this->phone,
             'amenities' => AmenityResource::collection($this->amenities),
             'room_types' => RoomTypeResource::collection($this->room_type),
-            'min_price' => $this->room_type->min('price'),
-            'max_price' => $this->room_type->max('price'),
+            'min_price' => $this->room_type->isNotEmpty() ? $this->room_type->min('price') : null,
+            'max_price' => $this->room_type->isNotEmpty() ? $this->room_type->max('price') : null,
             'photos' => HotelImageResource::collection($this->photos),
             'avg_rating' => $this->reviews_avg_rating
                 ? round($this->reviews_avg_rating, 1)
